@@ -70,9 +70,12 @@ def _type_factory(data_file, data_mapping, row_index=True, function=None,
                   fail_condition=False):
     def func(self, infobox, base_item_type):
         try:
-            data = self.rr[data_file].index['BaseItemTypesKey'][
-                base_item_type.rowid if row_index else base_item_type['Id']
-            ]
+            if data_file == 'BaseItemTypes.dat':
+                data = base_item_type
+            else:
+                data = self.rr[data_file].index['BaseItemTypesKey'][
+                    base_item_type.rowid if row_index else base_item_type['Id']
+                ]
         except KeyError:
             warnings.warn(
                 'Missing %s info for "%s"' % (data_file, base_item_type['Name'])
@@ -2477,13 +2480,25 @@ class ItemsParser(SkillParserShared):
                 'template': 'stack_size_currency_tab',
                 'condition': lambda v: v > 0,
             }),
-            ('CosmeticTypeName', {
-                'template': 'cosmetic_type',
-                'condition': lambda v: v,
-            }),
         ),
         row_index=True,
         function=_currency_extra,
+    )
+
+    _type_microtransaction = _type_factory(
+        data_file='BaseItemTypes.dat',
+        data_mapping=(
+            ('ItemShopType', {
+                'template': 'cosmetic_type',
+                'format': lambda v: v['Name'],
+                'condition': lambda v: v,
+            }),
+            ('ItemThemesKey', {
+                'template': 'cosmetic_theme',
+                'format': lambda v: v['Name'],
+                'condition': lambda v: v,
+            }),
+        ),
     )
 
     _master_hideout_doodad_map = (
@@ -2950,7 +2965,7 @@ class ItemsParser(SkillParserShared):
         'DelveSocketableCurrency': (_type_currency, ),
         'DelveStackableSocketableCurrency': (_type_currency,),
         'HideoutDoodad': (_type_currency, _type_hideout_doodad),
-        'Microtransaction': (_type_currency, ),
+        'Microtransaction': (_type_currency, _type_microtransaction),
         'DivinationCard': (_type_currency, ),
         'Incubator': (_type_currency, _type_incubator),
         'HarvestSeed': (_type_currency, _type_harvest_seed),
