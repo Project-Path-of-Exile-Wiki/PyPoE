@@ -888,19 +888,19 @@ specification = Specification({
                 key='Stats.dat',
             ),
             Field(
-                name='Stat1Min',
+                name='Stat1Value',
                 type='int',
             ),
             Field(
-                name='Stat1Max',
+                name='Stat2Value',
                 type='int',
             ),
             Field(
-                name='Stat2Min',
+                name='Stat3Value',
                 type='int',
             ),
             Field(
-                name='Stat2Max',
+                name='Stat4Value',
                 type='int',
             ),
             Field(
@@ -956,7 +956,7 @@ specification = Specification({
                 type='ref|string',
             ),
             Field(
-                name='DDSIcon',
+                name='Icon_DDSFile',
                 type='ref|string',
                 file_path=True,
                 file_ext='.dds',
