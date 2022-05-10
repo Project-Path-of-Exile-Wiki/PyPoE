@@ -888,19 +888,19 @@ specification = Specification({
                 key='Stats.dat',
             ),
             Field(
-                name='Stat1Value',
+                name='Stat1Min',
                 type='int',
             ),
             Field(
-                name='Stat2Value',
+                name='Stat1Max',
                 type='int',
             ),
             Field(
-                name='Stat3Value',
+                name='Stat2Min',
                 type='int',
             ),
             Field(
-                name='Stat4Value',
+                name='Stat2Max',
                 type='int',
             ),
             Field(

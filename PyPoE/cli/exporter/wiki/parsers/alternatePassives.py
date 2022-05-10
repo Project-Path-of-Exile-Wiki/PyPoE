@@ -284,8 +284,10 @@ class AlternatePassiveSkillParser(parser.BaseParser):
                 j = i + 1
                 stat_ids.append(stat['Id'])
                 data['stat%s_id' % j] = stat['Id']
-                values.append(passive['Stat%sValue' % j])
-                data['stat%s_value' % j] = passive['Stat%sValue' % j]
+                value = passive['Stat%sMin' % j], passive['Stat%sMax' % j]
+                values.append(value)
+                data['stat%s_min' % j] = passive['Stat%sMin' % j]
+                data['stat%s_max' % j] = passive['Stat%sMax' % j]
 
             data['stat_text'] = '<br>'.join(self._get_stats(
                 stat_ids, values,
