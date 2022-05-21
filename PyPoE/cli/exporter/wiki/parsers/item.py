@@ -2832,7 +2832,7 @@ class ItemsParser(SkillParserShared):
             ('RecoveryTime', {
                 'template': 'flask_duration',
                 'condition': lambda v: v > 0,
-                'format': lambda v: '{0:n}'.format(v / 10),
+                'format': lambda v: f'{v / 10:n}',
             }),
             ('BuffDefinitionsKey', {
                 'template': 'buff_id',
@@ -2862,11 +2862,11 @@ class ItemsParser(SkillParserShared):
         data_mapping=(
             ('Critical', {
                 'template': 'critical_strike_chance',
-                'format': lambda v: '{0:n}'.format(v / 100),
+                'format': lambda v: f'{v / 100:n}',
             }),
             ('Speed', {
                 'template': 'attack_speed',
-                'format': lambda v: '{0:n}'.format(round(1000 / v, 2)),
+                'format': lambda v: f'{round(1000 / v, 2):n}',
             }),
             ('DamageMin', {
                 'template': 'physical_damage_min',

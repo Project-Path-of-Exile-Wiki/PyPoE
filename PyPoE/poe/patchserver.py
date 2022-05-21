@@ -148,13 +148,13 @@ def node_check_hash(directory_node, folder_path=None, ggpk=None,
         node_hashes = node_check_hash(node, ggpk=ggpk)
 
         if node_hashes[-1][2] is True:
-          print('hashes match for {}'.format(node.get_path()))
+          print(f'hashes match for {node.get_path()}')
         else:
           for child_node, child_hash, child_bool in node_hashes:
             if bool is False:
               print(child_node.record.name)
-              print('{} file hash'.format(child_hash.hexdigest()))
-              print('{:064x} expected hash'.format(child_node.record.hash))
+              print(f'{child_hash.hexdigest()} file hash')
+              print(f'{child_node.record.hash:064x} expected hash')
 
         # up to date?
         import PyPoE.poe.patchserver
@@ -180,7 +180,7 @@ def node_check_hash(directory_node, folder_path=None, ggpk=None,
             node_patchserver_results.append(hash_test)
 
         if list(zip(node_hashes, node_patchserver_results))[-1][1] is True:
-          print('hashes match patchserver for {}'.format(test_node))
+          print(f'hashes match patchserver for {test_node}')
 
     Example files::
 
@@ -193,9 +193,7 @@ def node_check_hash(directory_node, folder_path=None, ggpk=None,
         node_hash_list = PyPoE.poe.patchserver.node_check_hash(
           patch_file_list.directory, folder_path=poe_dir, recurse=False)
         for node, checksum, matched in node_hash_list:
-          print('{} hashed okay?: {}'.format(
-            node.record.name,
-            matched))
+          print(f'{node.record.name} hashed okay?: {matched}')
 
     Parameters
     ---------
@@ -482,11 +480,10 @@ def node_update_files(patch_file_list, directory_node_path,
         pretty_hash = format(hash, '064x')
         dst_file = os.path.join(folder_path, files_subdir, pretty_hash)
         node_file_name = nodes[0].get_path()
-        print("{} file downloads remaining".format(
-            files_count - download_index))
+        print(f"{files_count - download_index} file downloads remaining")
         patch_file_list.patch.download(node_file_name,
                                        dst_file=dst_file)
-        print("downloaded: {}".format(node_file_name))
+        print(f"downloaded: {node_file_name}")
         download_index += 1
 
         for node in nodes:
@@ -1006,15 +1003,13 @@ class PatchFileList:
             folder_name = ''
             if query_header != PatchFileList._PROTO_HEADER2:
                 raise KeyError('Unknown patch server header:'
-                               + ' {} from query: {}'
-                               .format(query_header, folder_query))
+                               f' {query_header} from query: {folder_query}')
 
             folder_name = self.extract_varchar()
 
             item_count = struct.unpack('>I', self.read(4))[0]
 
-            print('{} items in directory {}'
-                  .format(item_count, folder_name))
+            print(f'{item_count} items in directory {folder_name}')
 
             parent = self.directory[folder]
 
@@ -1028,9 +1023,8 @@ class PatchFileList:
                     tag = 'PDIR'
                 else:
                     raise KeyError('Unknown patch server'
-                                   + ' item type:'
-                                   + ' {} from query: {}'
-                                   .format(header, folder_query))
+                                   ' item type:'
+                                   f' {header} from query: {folder_query}')
 
                 name = self.extract_varchar()
 
@@ -1212,8 +1206,7 @@ class DirectoryNodeExtended(DirectoryNode):
                     hash=node_hash)
 
             else:
-                raise KeyError('Unknown type: {}'.format(
-                    node_type))
+                raise KeyError(f'Unknown type: {node_type}')
 
         if parent is None:
             self.record = temp_record
@@ -1246,8 +1239,7 @@ class DirectoryNodeExtended(DirectoryNode):
                 name = node.record.name
               except:
                 name = 'ROOT'
-              print('{blank:>{width}}{name}'.format(
-                name=name, width=depth, blank=''))
+              print(f'{name:>{depth + len(name)}}')
 
         Parameters
         ---------

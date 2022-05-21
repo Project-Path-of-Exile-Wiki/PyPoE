@@ -163,7 +163,7 @@ class SkillParserShared(parser.BaseParser):
         # ('ManaCost', {
         #     'template': 'mana_cost',
         #     'default': 0,
-        #     'format': lambda v: '{0:n}'.format(v),
+        #     'format': lambda v: f'{v:n}',
         # }),
         ('CostAmounts', {
             'template': 'cost_amounts',
@@ -181,75 +181,75 @@ class SkillParserShared(parser.BaseParser):
         }),
         ('ManaMultiplier', {
             'template': 'mana_multiplier',
-            'format': lambda v: '{0:n}'.format(v),
+            'format': lambda v: f'{v:n}',
             'skip_active': True,
         }),
         ('StoredUses', {
             'template': 'stored_uses',
             'default': 0,
-            'format': lambda v: '{0:n}'.format(v),
+            'format': lambda v: f'{v:n}',
         }),
         ('Cooldown', {
             'template': 'cooldown',
             'default': 0,
-            'format': lambda v: '{0:n}'.format(v/1000),
+            'format': lambda v: f'{v/1000:n}',
         }),
         ('VaalSouls', {
             'template': 'vaal_souls_requirement',
             'default': 0,
-            'format': lambda v: '{0:n}'.format(v),
+            'format': lambda v: f'{v:n}',
         }),
         ('VaalStoredUses', {
             'template': 'vaal_stored_uses',
             'default': 0,
-            'format': lambda v: '{0:n}'.format(v),
+            'format': lambda v: f'{v:n}',
         }),
         ('VaalSoulGainPreventionTime', {
             'template': 'vaal_soul_gain_prevention_time',
             'default': 0,
-            'format': lambda v: '{0:n}'.format(v/1000),
+            'format': lambda v: f'{v/1000:n}',
         }),
         ('CriticalStrikeChance', {
             'template': 'critical_strike_chance',
             'default': 0,
-            'format': lambda v: '{0:n}'.format(v/100),
+            'format': lambda v: f'{v/100:n}',
         }),
         ('DamageEffectiveness', {
             'template': 'damage_effectiveness',
-            'format': lambda v: '{0:n}'.format(v+100),
+            'format': lambda v: f'{v+100:n}',
         }),
         ('DamageMultiplier', {
             'template': 'damage_multiplier',
-            'format': lambda v: '{0:n}'.format(v/100+100),
+            'format': lambda v: f'{v/100+100:n}',
         }),
         ('AttackSpeedMultiplier', {
             'template': 'attack_speed_multiplier',
-            'format': lambda v: '{0:n}'.format(v+100),
+            'format': lambda v: f'{v+100:n}',
         }),
         ('BaseDuration', {
             'template': 'duration',
             'default': 0,
-            'format': lambda v: '{0:n}'.format(v / 1000),
+            'format': lambda v: f'{v / 1000:n}',
         }),
         ('ManaReservationFlat', {
             'template': 'mana_reservation_flat',
             'default': 0,
-            'format': lambda v: '{0:n}'.format(v),
+            'format': lambda v: f'{v:n}',
         }),
         ('ManaReservationPercent', {
             'template': 'mana_reservation_percent',
             'default': 0,
-            'format': lambda v: '{0:n}'.format(v/100),
+            'format': lambda v: f'{v/100:n}',
         }),
         ('LifeReservationFlat', {
             'template': 'life_reservation_flat',
             'default': 0,
-            'format': lambda v: '{0:n}'.format(v),
+            'format': lambda v: f'{v:n}',
         }),
         ('LifeReservationPercent', {
             'template': 'life_reservation_percent',
             'default': 0,
-            'format': lambda v: '{0:n}'.format(v/100),
+            'format': lambda v: f'{v/100:n}',
         }),
     )
 

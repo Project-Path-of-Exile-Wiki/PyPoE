@@ -1877,17 +1877,17 @@ def format_result_rows(parsed_args, ordered_dict, template_name,
     out = []
 
     if parsed_args.format == 'template':
-        out = ['{{%s\n' % template_name]
+        out = [f'{{{{{template_name}\n']
         for k, v in ordered_dict.items():
             if v is not None:
-                out.append(('|{0: <%s}= {1}\n' % indent).format(k, v))
+                out.append(f'|{k: <{indent}}= {v}\n')
         out.append('}}')
     elif parsed_args.format == 'module':
         ordered_dict['debug_id'] = 1
         out = ['{']
         for k, v in ordered_dict.items():
             if v is not None:
-                out.append('{0} = "{1}", '.format(k, v))
+                out.append(f'{k} = "{v}", ')
         out[-1] = out[-1].strip(', ')
         out.append('}')
     return ''.join(out)

@@ -248,7 +248,7 @@ class UniqueCopy(BaseParser):
 
         # Add inventory icon so it shows up correctly
         if not mwtemplate.has('inventory_icon'):
-            mwtemplate.add('{0: <40}'.format('inventory_icon'), name)
+            mwtemplate.add('inventory_icon'.ljust(40, ' '), name)
 
         # Find translated item name
         console('Finding item name...')
