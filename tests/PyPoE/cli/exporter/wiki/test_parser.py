@@ -354,7 +354,6 @@ def test_find_template(string, template, texts, args, kwargs):
     assert result['kwargs'] == kwargs
 
 
-# TODO
 @pytest.mark.parametrize('input_data,expected_result', frrdata)
 def test_format_result_rows(input_data, expected_result):
     result = parser.format_result_rows(
