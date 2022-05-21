@@ -1873,6 +1873,9 @@ def format_result_rows(parsed_args, ordered_dict, template_name,
     out : str
         formatted string
     """
+    assert indent >= 0
+    out = []
+
     if parsed_args.format == 'template':
         out = ['{{%s\n' % template_name]
         for k, v in ordered_dict.items():

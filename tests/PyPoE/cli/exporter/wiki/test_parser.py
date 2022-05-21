@@ -190,6 +190,100 @@ This item can be obtained by using a {{il|Divine Vessel}} with a {{il|Beach Map}
     ),
 )
 
+class FakeArgsObject:
+    """This object is created only because format_result_rows accepts
+    'parse_args' object as parameter instead of 'format' string.
+
+    Preferably, this object should be removed and 'format' should be passed as
+    string."""
+    def __init__(self, _format):
+        self.format = _format
+
+frrdata = (
+    # Empty / missing format specifier
+    (
+        {
+            'parsed_args' : FakeArgsObject(None),
+            'ordered_dict' : OrderedDict(()),
+            'template_name' : 'template_name',
+            'indent' : parser.DEFAULT_INDENT
+        },
+        ''
+    ),
+
+    # Empty template section
+    (
+        {
+            'parsed_args' : FakeArgsObject('template'),
+            'ordered_dict' : OrderedDict(()),
+            'template_name' : 'template_name',
+            'indent' : parser.DEFAULT_INDENT
+        },
+"""{{template_name
+}}"""
+    ),
+
+    # Simple template
+    (
+        {
+            'parsed_args' : FakeArgsObject('template'),
+            'ordered_dict' : OrderedDict((
+                ('name1', 'value1'),
+                ('name2', 'value2'),
+            )),
+            'template_name' : 'template_name',
+            'indent' : parser.DEFAULT_INDENT
+        },
+"""{{template_name
+|name1                           = value1
+|name2                           = value2
+}}"""
+    ),
+
+    # Simple template without indent
+    (
+        {
+            'parsed_args' : FakeArgsObject('template'),
+            'ordered_dict' : OrderedDict((
+                ('name1', 'value1'),
+                ('name2', 'value2'),
+            )),
+            'template_name' : 'template_name',
+            'indent' : 0
+        },
+"""{{template_name
+|name1= value1
+|name2= value2
+}}"""
+    ),
+
+    # Simple module
+    (
+        {
+            'parsed_args' : FakeArgsObject('module'),
+            'ordered_dict' : OrderedDict((
+                ('name1', 'value1'),
+                ('name2', 'value2'),
+            )),
+            'template_name' : 'template_name',
+            'indent' : parser.DEFAULT_INDENT  # doesn't matter
+        },
+        '{name1 = "value1", name2 = "value2", debug_id = "1"}'
+    ),
+
+    # Empty module section
+    (
+        {
+            'parsed_args' : FakeArgsObject('module'),
+            'ordered_dict' : OrderedDict((
+            )),
+            'template_name' : 'template_name',
+            'indent' : parser.DEFAULT_INDENT  # doesn't matter
+        },
+        '{debug_id = "1"}'
+    ),
+)
+
 
 # =============================================================================
 # Tests
@@ -258,3 +352,16 @@ def test_find_template(string, template, texts, args, kwargs):
     assert result['texts'] == texts
     assert result['args'] == args
     assert result['kwargs'] == kwargs
+
+
+# TODO
+@pytest.mark.parametrize('input_data,expected_result', frrdata)
+def test_format_result_rows(input_data, expected_result):
+    result = parser.format_result_rows(
+        input_data['parsed_args'],
+        input_data['ordered_dict'],
+        input_data['template_name'],
+        input_data['indent']
+    )
+
+    assert result == expected_result
