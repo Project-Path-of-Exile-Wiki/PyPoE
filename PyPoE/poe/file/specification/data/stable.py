@@ -5493,8 +5493,9 @@ specification = Specification({
                 type='ref|list|int',
             ),
             Field(
-                name='Key2',
+                name='ShopTagKey',
                 type='ref|out',
+                key='ShopTag.dat',
             ),
             Field(
                 name='Flag1',
@@ -14460,9 +14461,13 @@ specification = Specification({
                 type='ref|list|int',
             ),
             Field(
-                name='Unknown1',
-                type='int',
+                name='MaskFlag_QuestFlagsKey',
+                type='ref|out',
             ),
+            Field(
+                name='Key0',
+                type='ref|out',
+            )
         ),
     ),
     'MapPurchaseCosts.dat': File(
@@ -19861,15 +19866,128 @@ specification = Specification({
             ),
             Field(
                 name='QuestState',
-                type='int',
+                type='ref|out',
+                key='QuestFlags.dat',
             ),
             Field(
                 name='Unknown0',
                 type='int',
             ),
             Field(
+                name='RewardWindowTake_ClientStringsKey',
+                type='ref|out',
+                key='ClientStrings.dat',
+            ),
+            Field(
+                name='Flag0',
+                type='bool',
+            ),
+            Field(
+                name='Flag1',
+                type='bool',
+            ),
+            Field(
+                name='RewardWindowTitle_ClientStringsKey',
+                type='ref|out',
+                key='ClientStrings.dat',
+            ),
+            Field(
                 name='Unknown1',
                 type='int',
+            ),
+            Field(
+                name='RewardWindowTakeHardMode_ClientStringsKey',
+                type='ref|out',
+                key='ClientStrings.dat',
+            ),
+        ),
+    ),
+    'QuestRewards.dat': File(
+        fields=(
+            Field(
+                name='QuestRewardOffersKey',
+                type='ref|out',
+                key='QuestRewardOffers.dat',
+            ),
+            Field(
+                name='Unknown1',
+                type='int',
+            ),
+            Field(
+                name='CharactersKey',
+                type='ref|list|ref|out',
+                key='Characters.dat',
+            ),
+            Field(
+                name='BaseItemTypesKey',
+                type='ref|out',
+                key='BaseItemTypes.dat',
+            ),
+            Field(
+                name='ItemLevel',
+                type='int',
+            ),
+            Field(
+                name='RarityKey',
+                type='ref|out',
+                key='Rarity.dat',
+                enum='RARITY',
+            ),
+            Field(
+                name='Unknown2',
+                type='int',
+            ),
+            Field(
+                name='SocketGems',
+                type='ref|string',
+            ),
+            Field(
+                name='Key1',
+                type='ref|list|ref|out',
+            ),
+            Field(
+                name='RewardStack',
+                type='int',
+            ),
+            Field(
+                name='Flag1',
+                type='bool',
+            ),
+            Field(
+                name='Flag2',
+                type='bool',
+            ),
+            Field(
+                name='Keys0',
+                type='ref|list|ref|out',
+            ),
+            Field(
+                name='Unknown4',
+                type='int',
+            ),
+            Field(
+                name='Unknown5',
+                type='int',
+            ),
+            Field(
+                name='Unknown6',
+                type='ref|list|int',
+            ),
+            Field(
+                name='Difficulty',
+                type='int',
+            ),
+            Field(
+                name='Unknown8',
+                type='ref|out',
+            ),
+            Field(
+                name='Unknown9',
+                type='int',
+            ),
+            Field(
+                name='Unknown10',
+                type='ref|list|int',
             ),
         ),
     ),
@@ -19935,20 +20053,20 @@ specification = Specification({
                 type='ref|list|int',
             ),
             Field(
+                name='Data2',
+                type='ref|list|int',
+            ),
+            Field(
                 name='QuestStateCalcuationKey',
                 type='int',
             ),
             Field(
-                name='Key0',
+                name='SoundEffect',
                 type='ref|out',
             ),
             Field(
                 name='Unknown2',
-                type='int',
-            ),
-            Field(
-                name='Unknown3',
-                type='int',
+                type='ref|string',
             ),
         ),
     ),
@@ -20101,6 +20219,43 @@ specification = Specification({
             Field(
                 name='Life',
                 type='int',
+            ),
+        ),
+    ),
+    'Rarity.dat': File(
+        fields=(
+            Field(
+                name='Id',
+                type='ref|string',
+                unique=True,
+            ),
+            Field(
+                name='Unknown0',
+                type='int',
+            ),
+            Field(
+                name='Unknown1',
+                type='int',
+            ),
+            Field(
+                name='Unknown2',
+                type='int',
+            ),
+            Field(
+                name='Unknown3',
+                type='int',
+            ),
+            Field(
+                name='Unknown4',
+                type='int',
+            ),
+            Field(
+                name='Unknown5',
+                type='int',
+            ),
+            Field(
+                name='HexARGB',
+                type='ref|string',
             ),
         ),
     ),
@@ -20772,6 +20927,33 @@ specification = Specification({
                 unique=True,
             ),
         ),
+    ),
+    'ShopTag.dat': File(
+        fields=(
+            Field(
+                name='Id',
+                type='ref|string',
+                unique=True,
+            ),
+            Field(
+                name='Name',
+                type='ref|string',
+            ),
+            Field(
+                name='IsCategory',
+                type='bool',
+            ),
+            Field(
+                name='Category',
+                type='ref|self',
+                key='ShopTag.dat',
+            ),
+            Field(
+                name='SkillGem',
+                type='ref|list|ref|out',
+                key='BaseItemTypes.dat',
+            ),
+        )
     ),
     'ShopToken.dat': File(
         fields=(

@@ -2448,6 +2448,67 @@ class ItemsParser(SkillParserShared):
         'Metadata/Items/Weapons/OneHandWeapons/Daggers/EtherealBlade1',
         'Metadata/Items/ItemEffects/SekhemasBanner',
         'Metadata/Items/Armours/BodyArmours/BodyStrTemp',
+
+        #
+        # Old region watchstones
+        #
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgradeFinal',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade1_1',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade1_2',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade1_3',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade1_4',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade1_5',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade1_6',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade1_7',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade1_8',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade2_1',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade2_2',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade2_3',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade2_4',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade2_5',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade2_6',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade2_7',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade2_8',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade3_1',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade3_2',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade3_3',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade3_4',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade3_5',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade3_6',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade3_7',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade3_8',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade4_1',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade4_2',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade4_3',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade4_4',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade4_5',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade4_6',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade4_7',
+        'Metadata/Items/AtlasUpgrades/AtlasRegionUpgrade4_8',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable1_1',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable1_2',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable1_3',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable1_4',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable1_5',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable1_6',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable1_7',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable1_8',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable2_1',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable2_2',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable2_3',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable2_4',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable2_5',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable2_6',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable2_7',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable2_8',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable3_1',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable3_2',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable3_3',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable3_4',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable3_5',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable3_6',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable3_7',
+        'Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable3_8',
     }
 
     _attribute_map = OrderedDict((
@@ -2881,20 +2942,17 @@ class ItemsParser(SkillParserShared):
     )
 
     _type_microtransaction = _type_factory(
-        data_file='BaseItemTypes.dat64',
+        data_file='CurrencyItems.dat64',
         data_mapping=(
-            # This field was removed in 3.17.
-            # ('ItemShopType', {
-            #     'template': 'cosmetic_type',
-            #     'format': lambda v: v['Name'],
-            #     'condition': lambda v: v,
-            # }),
-            # This field was also removed in 3.17.
-            # ('ItemThemesKey', {
-            #     'template': 'cosmetic_theme',
-            #     'format': lambda v: v['Name'],
-            #     'condition': lambda v: v,
-            # }),
+            ('CosmeticTypeName', {
+                'template': 'cosmetic_type',
+                'condition': lambda v: v,
+            }),
+            ('ShopTagKey', {
+                'template': 'cosmetic_theme',
+                'format': lambda v: v['Name'],
+                'condition': lambda v: v,
+            }),
         ),
     )
 

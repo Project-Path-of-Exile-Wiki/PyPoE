@@ -262,6 +262,16 @@ class LuaHandler(ExporterHandler):
         )
 
         parser = lua_sub.add_parser(
+            'quest_rewards',
+            help='Extract quest rewards into lua.'
+        )
+        self.add_default_parsers(
+            parser=parser,
+            cls=QuestRewardReader,
+            func=QuestRewardReader.read_quest_rewards,
+        )
+
+        parser = lua_sub.add_parser(
             'synthesis',
             help='Extract synthesis information',
         )
@@ -1077,6 +1087,220 @@ class PantheonParser(GenericLuaParser):
             )
 
         return r
+
+
+class QuestRewardReader(BaseParser):
+    # Load the files we need
+    _files = [
+        'BaseItemTypes.dat64',
+        'Characters.dat64',
+        'NPCs.dat64',
+        'Quest.dat64',
+        'QuestStates.dat64',
+        'QuestRewards.dat64',
+        'MapSeries.dat64'
+    ]
+
+    # TODO find a better way
+    # TODO Break with updates
+    _ITEM_MAP = {
+        'English': {
+            # A2: Though Scared Ground
+            423: "Survival Instincts", # Veridian
+            424: "Survival Skills", # Crimson
+            425: "Survival Secrets", # Cobalt
+            # A5: The King's Feast
+            454: "Poacher's Aim", # Verdian
+            455: "Warlord's Reach ", # Crimson
+            456: "Assassin's Haste", # Cobalt
+            #
+            457: "Conqueror's Efficiency", # crimson
+            458: "Conqueror's Potency", # cobalt
+            459: "Conqueror's Longevity", #viridian
+            # A5: Death to Puirty
+            560: "Rapid Expansion",
+            780: "Wildfire",
+            777: "Overwhelming Odds",
+
+            775: "Collateral Damage",
+            779: "Omen on the Winds",
+            781: "Fight for Survival",
+            784: "Ring of Blades",
+
+            778: "First Snow",
+            783: "Frozen Trail",
+            786: "Inevitability",
+            788: "Spreading Rot",
+            789: "Violent Dead",
+            790: "Hazardous Research",
+        },
+        'Russian': {
+            # A2: По святой земле
+            423: "Инстинкты выживания", # Бирюзовый
+            424: "Навыки выживания", # Багровый
+            425: "Секреты выживания", # Кобальтовый
+            # A5: Пир вождя
+            454: "Браконьерство", # Бирюзовый
+            455: "Длинные руки ", # Багровый
+            456: "Бойкий убийца", # Кобальтовый
+            #
+            457: "Смекалка победителя", # Багровый
+            458: "Могущество победителя", # Кобальтовый
+            459: "Живучесть победителя", #Бирюзовый
+            # A5: Смерть Чистоте
+            560: "Быстрое расширение",
+            780: "Степной пожар",
+            777: "Подавляющее превосходство",
+
+            775: "Сопутствующий риск",
+            779: "Знамение ветров",
+            781: "Борьба за жизнь",
+            784: "Кольцо клинков",
+
+            778: "Первый снег",
+            783: "Мерзлый путь",
+            786: "Неизбежность",
+            788: "Гангрена",
+            789: "Ярость мертвецов",
+            790: "Опасная наука",
+        },
+    }
+
+    _TWO_STONE_MAP = {
+        'English': {
+            'Metadata/Items/Rings/Ring12': "Two-Stone Ring (ruby and topaz)",
+            'Metadata/Items/Rings/Ring13': "Two-Stone Ring (sapphire and topaz)",
+            'Metadata/Items/Rings/Ring14': "Two-Stone Ring (ruby and sapphire)",
+        },
+        'Russian': {
+            'Metadata/Items/Rings/Ring12':
+                "Кольцо с двумя камнями (рубин и топаз)",
+            'Metadata/Items/Rings/Ring13':
+                "Кольцо с двумя камнями (сапфир и топаз)",
+            'Metadata/Items/Rings/Ring14':
+                "Кольцо с двумя камнями (рубин и сапфир)",
+        },
+        'German': {
+            'Metadata/Items/Rings/Ring12': "Zweisteinring (Rubin und Topas)",
+            'Metadata/Items/Rings/Ring13': "Zweisteinring (Saphir und Topas)",
+            'Metadata/Items/Rings/Ring14': "Zweisteinring (Rubin und Saphir)",
+        }
+    }
+
+    _UNIT_SEP = '\u001F'
+
+    def _write_lua(self, outdata, data_type):
+        # Pre-sort
+        outdata.sort(key=lambda x: x['reward'])
+        outdata.sort(key=lambda x: x['quest_id'])
+        outdata.sort(key=lambda x: x['act'])
+
+        r = ExporterResult()
+        r.add_result(
+            text=LuaFormatter.format_module(outdata),
+            out_file='%s_rewards.txt' % data_type,
+            wiki_page=[{
+                'page': 'Module:Quest reward/data/%s_rewards' % data_type,
+                'condition': None,
+            }]
+        )
+
+        return r
+
+    def read_quest_rewards(self, args):
+        compress = {}
+        for row in self.rr['QuestRewards.dat64']:
+            # Find the corresponding keys
+            item = row['BaseItemTypesKey']
+
+            # TODO: Skipping random map reward with zana mod here
+            if item is None:
+                continue
+            quest = row['QuestRewardOffersKey']['QuestKey']
+            character = row['CharactersKey']
+
+
+            itemcls = item['ItemClassesKey']['Id']
+
+            # Format the data
+            data = OrderedDict()
+
+            data['quest'] = quest['Name']
+            data['quest_id'] = quest['Id']
+            # Quest not implemented or buggy or master stuff
+            if not data['quest']:
+                continue
+            data['act'] = quest['Act']
+
+            DIFFICULTIES = ['any', 'normal', 'hard']
+            data['difficulty'] = DIFFICULTIES[row['Difficulty']]
+
+            if character is not None and len(character):
+                data['classes'] = self._UNIT_SEP.join([c['Name'] for c in character])
+
+            if row['RarityKey'] is not None:
+                rarity = self.rr['ClientStrings.dat64'].index['Id'][
+                    'ItemDisplayString' + row['RarityKey']['Id']]['Text']
+
+            sockets = row['SocketGems']
+            if sockets:
+                data['sockets'] = sockets
+
+            name = item['Name']
+
+            # Some of unique items follow special rules
+            if itemcls == 'QuestItem' and 'Book' in item['Id']:
+                name = '%s (%s)' % (name, data['quest'])
+            elif itemcls == 'Map':
+                name = '%s (%s)' % (
+                    name, self.rr['MapSeries.dat64'].index['Id']['MapWorlds'][
+                        'Name']
+                )
+            # Non non quest items or skill gems have their rarity added
+            if itemcls not in {'Active Skill Gem', 'Support Skill Gem',
+                               'QuestItem', 'StackableCurrency'}:
+                data['item_level'] = row['ItemLevel']
+                data['rarity'] = rarity
+                # Unique and not a quest item or gem
+                if row['RarityKey'] == RARITY.ANY:
+                    uid = row['Key0']
+                    item_map = self._ITEM_MAP.get(config.get_option('language'))
+                    if item_map is None:
+                        warnings.warn(
+                             'No unique item mapping defined for the current '
+                             'language'
+                        )
+                    elif uid in item_map:
+                        name = item_map[uid]
+                        data['rarity'] = self.rr['ClientStrings.dat64'].index[
+                            'Id']['ItemDisplayStringUnique']['Text']
+                    else:
+                        warnings.warn(
+                            'Uncaptured unique item. %s %s %s' % (
+                                uid, data['quest'], name)
+                        )
+
+            # Two stone rings
+            two_stone_map = self._TWO_STONE_MAP.get(
+                config.get_option('language'))
+            if two_stone_map is None:
+                warnings.warn(
+                    'No two stone ring mapping for the current language')
+            elif item['Id'] in two_stone_map:
+                name = two_stone_map[item['Id']]
+            data['reward'] = name
+
+            # Add to formatting list
+            # TODO(LV): What did Key0 represent in the past?
+            # Old suffix: str(row['Key0'])
+            key = f"{quest['Id']} {item['Id']} {row['Difficulty']}"
+            if key in compress:
+                compress[key]['classes'] += self._UNIT_SEP + self._UNIT_SEP.join([c['Name'] for c in character])
+            else:
+                compress[key] = data
+
+        outdata = [data for data in compress.values()]
+        return self._write_lua(outdata, 'quest')
 
 
 class SynthesisParser(GenericLuaParser):
