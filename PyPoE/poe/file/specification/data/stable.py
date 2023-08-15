@@ -956,7 +956,7 @@ specification = Specification({
                 type='ref|string',
             ),
             Field(
-                name='DDSIcon',
+                name='Icon_DDSFile',
                 type='ref|string',
                 file_path=True,
                 file_ext='.dds',
