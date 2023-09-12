@@ -61,6 +61,10 @@ More detailed docs: [http://omegak2.net/poe/PyPoE/](http://omegak2.net/poe/PyPoE
     - Update the wiki (Caution! Updates the live site!):\
     `./export.bash --threads 30 -u <wiki-username> -p <wiki-password> --export`
 
+6. Installing as a dependency
+
+    - To install PyPoE as a dependency of a project that doesn't use poetry, run `poetry build`, then `pip install ./dist/pypoe-*.*.*.tar.gz`.
+
 ## Setting up on VSCode
 
 VSCode has some great integrations with all this tooling. In order for you to benefit from them, please ensure you adjust your settings to the following..
