@@ -896,7 +896,7 @@ class DatReader(ReprMixin):
         if self.specification is None:
             self.cast_size = self.table_record_length
 
-        if self.cast_size != self.table_record_length:
+        if self.cast_size > self.table_record_length:
             raise SpecificationError(
                 SpecificationError.ERRORS.RUNTIME_ROWSIZE_MISMATCH,
                 '"%(name)s": Specification row size %(spec_size)s vs real size %(cast_size)s'
