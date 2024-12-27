@@ -1,11 +1,11 @@
 """
-Utility functions for exporters
+Parser package init
 
 Overview
 ===============================================================================
 
 +----------+------------------------------------------------------------------+
-| Path     | PyPoE/cli/exporter/util.py                                       |
+| Path     | PyPoE/cli/exporter/wiki/parsers/__init__.py                      |
 +----------+------------------------------------------------------------------+
 | Version  | 1.0.0a0                                                          |
 +----------+------------------------------------------------------------------+
@@ -17,73 +17,77 @@ Overview
 Description
 ===============================================================================
 
-Utility functions for exporters.
+Automatically finds all ExporterHandlers in the package files and import them
+into WIKI_HANDLERS.
 
 Agreement
 ===============================================================================
 
 See PyPoE/LICENSE
 """
-import json
 
-# Python
-import re
-from urllib import request
-
-from PyPoE.cli.exporter import config
-
-# self
-from PyPoE.poe.path import PoEPath
 
 # =============================================================================
 # Imports
 # =============================================================================
 
 
+# Python
+import os
+from importlib import import_module
+
+# self
+from PyPoE.cli.exporter.poe2wiki.handler import ExporterHandler
+
 # =============================================================================
 # Globals
 # =============================================================================
 
-__all__ = [
-    "get_content_path",
-    "fix_path",
-]
+
+WIKI_HANDLERS = []
+
+__all__ = ["WIKI_HANDLERS"]
 
 
 # =============================================================================
-# Functions
+# Funcs
 # =============================================================================
 
 
-def get_content_path(sequel=1):
-    """
-    Returns the path to the current content.ggpk based on the specified
-    config variables for the version & distributor.
+def _load():
+    cur_dir = os.path.split(os.path.realpath(__file__))[0]
+    for file_name in os.listdir(cur_dir):
+        if file_name.startswith("_"):
+            continue
+        file_name = file_name.replace(".py", "")
+        imp = import_module("." + file_name, __package__)
+        for obj_name in dir(imp):
+            if obj_name.startswith("_"):
+                continue
 
-    :return: Path of the content ggpk
-    :rtype: str
+            if not obj_name.endswith("Handler"):
+                continue
 
-    :raises SetupError: if no valid path was found.
-    """
-    path = config.get_option("ggpk_path")
-    if path == "":
-        args = config.get_option("version"), config.get_option("distributor")
-        paths = PoEPath(*args).get_installation_paths()
+            obj = getattr(imp, obj_name)
 
-        if not paths:
-            with request.urlopen(
-                f"https://lvlvllvlvllvlvl.github.io/poecdn-bundle-index/poe{sequel}/urls.json"
-            ) as cdn_url:
-                paths = json.loads(cdn_url.read().decode("utf-8"))["urls"]
+            # Not a class
+            if not isinstance(obj, type):
+                continue
 
-        return paths[0]
-    else:
-        return path
+            # Only export handlers
+            if not issubclass(obj, ExporterHandler):
+                continue
+
+            # Only subclasses of which
+            if obj is ExporterHandler:
+                continue
+
+            WIKI_HANDLERS.append(obj)
 
 
-def fix_path(path: str) -> str:
-    path = path.replace('"', "'", 2).replace("\t", "")
-    if re.search("[a-zA-Z]:.*", path) is not None:
-        return path[:2] + re.sub(r":", "_", path[2:])
-    else:
-        return path
+# =============================================================================
+# Init
+# =============================================================================
+
+
+_load()

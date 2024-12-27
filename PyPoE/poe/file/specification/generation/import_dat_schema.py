@@ -6,7 +6,7 @@ https://github.com/poe-tool-dev/dat-schema.
 import json
 import os
 import urllib.request
-from argparse import ArgumentParser
+from argparse import ArgumentParser, BooleanOptionalAction
 from collections import defaultdict
 from types import SimpleNamespace
 
@@ -27,6 +27,7 @@ from PyPoE.poe.file.specification.generation.virtual_fields import (
 
 SCHEMA_URL = "https://github.com/poe-tool-dev/dat-schema/releases/download/latest/schema.min.json"
 DESTINATION = os.path.join(os.path.dirname(__file__), "..", "data", "generated.py")
+DESTINATION2 = os.path.join(os.path.dirname(__file__), "..", "data", "poe2.py")
 
 
 def main():
@@ -41,8 +42,7 @@ def main():
     parser.add_argument(
         "--output",
         "-o",
-        default=DESTINATION,
-        help="Default: ../data/generated.py",
+        help=f"Default: {DESTINATION} or {DESTINATION2}",
     )
     parser.add_argument(
         "--adapt-version",
@@ -52,21 +52,23 @@ def main():
         default=[],
         help="Adapt the input schema to be compatible with another spec",
     )
+    parser.add_argument("--poe2", action=BooleanOptionalAction)
     args = parser.parse_args()
 
+    sequel = 2 if args.poe2 else 1
     if args.schema_file:
         schema_json = _read_dat_schema_local(args.schema_file)
     else:
         schema_json = _read_latest_dat_schema_release(args.schema_url)
-    input_spec = _load_dat_schema_tables(schema_json)
+    input_spec = _load_dat_schema_tables(schema_json, sequel)
 
     virtual_fields = defaultdict(dict)
 
     for version in args.adapt_version:
         _adapt_to_spec(VERSION[version.upper()], input_spec, virtual_fields)
 
-    output_spec = _convert_tables(input_spec, virtual_fields)
-    _write_spec(output_spec, args.output)
+    output_spec = _convert_tables(input_spec, virtual_fields, sequel)
+    _write_spec(output_spec, args.output or (DESTINATION2 if args.poe2 else DESTINATION))
 
 
 def _read_latest_dat_schema_release(url) -> str:
@@ -79,12 +81,14 @@ def _read_dat_schema_local(path) -> str:
         return f.read()
 
 
-def _load_dat_schema_tables(schema_json: str):
+def _load_dat_schema_tables(schema_json: str, sequel: int):
     data = json.loads(schema_json, object_hook=lambda d: SimpleNamespace(**d))
-    return sorted(data.tables, key=lambda table: table.name)
+    return sorted(filter(lambda v: v.validFor & sequel, data.tables), key=lambda table: table.name)
 
 
-def _convert_tables(tables: list, virtual_fields: dict[str, dict[str, VirtualField]]) -> str:
+def _convert_tables(
+    tables: list, virtual_fields: dict[str, dict[str, VirtualField]], sequel: int
+) -> str:
     spec = ""
     converted_tables = [_convert_table(table, virtual_fields.get(table.name)) for table in tables]
     with open(os.path.join(os.path.dirname(__file__), "template.py"), "r") as f:
@@ -93,7 +97,7 @@ def _convert_tables(tables: list, virtual_fields: dict[str, dict[str, VirtualFie
             if line == "        # <specification>\n":
                 spec += "".join(converted_tables)
             else:
-                spec += line
+                spec += line.replace("# <version>", f"{sequel},")
     return spec
 
 
@@ -159,12 +163,19 @@ def _convert_column_type(column) -> str:
     else:
         return _TYPE_MAP[column.type]
 
-
 _TYPE_MAP = {
     "bool": "bool",
     "string": "ref|string",
+    "i8": "byte",
+    "i16": "short",
     "i32": "int",
+    "i64": "long",
+    "u8": "ubyte",
+    "u16": "ushort",
+    "u32": "uint",
+    "u64": "ulong",
     "f32": "float",
+    "f64": "double",
     "foreignrow": "ref|out",
     "row": "ref|generic",
     "enumrow": "int",

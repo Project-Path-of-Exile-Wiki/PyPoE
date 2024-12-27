@@ -152,6 +152,13 @@ def run(parser, config):
         quiet = True
         warnings.simplefilter("ignore")
 
+    if args.mem:
+        import resource
+
+        limit = args.mem * 1024 * 1024
+        console(f"memory limit {limit} bytes", msg=Msg.default)
+        resource.setrlimit(resource.RLIMIT_AS, (limit, limit))
+
     if hasattr(args, "func"):
         try:
             code = args.func(args)

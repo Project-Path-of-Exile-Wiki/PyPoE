@@ -53,24 +53,35 @@ from PIL import Image, ImageOps
 
 from PyPoE.cli.core import Msg, console
 from PyPoE.cli.exporter import config
-from PyPoE.cli.exporter.wiki import parser
-from PyPoE.cli.exporter.wiki.handler import ExporterHandler, ExporterResult
-from PyPoE.cli.exporter.wiki.parsers.itemconstants import (
+from PyPoE.cli.exporter.poe2wiki import parser
+from PyPoE.cli.exporter.poe2wiki.handler import ExporterHandler, ExporterResult
+from PyPoE.cli.exporter.poe2wiki.parsers.itemconstants import (
     MAPS_IN_SERIES_BUT_NOT_ON_ATLAS,
     MAPS_TO_SKIP_COLORING,
     MAPS_TO_SKIP_COMPOSITING,
 )
-from PyPoE.cli.exporter.wiki.parsers.skill import SkillParserShared
+from PyPoE.cli.exporter.poe2wiki.parsers.skill import SkillParserShared
+from PyPoE.cli.exporter.wiki.parser import process_keywords
 
 # Self
 from PyPoE.poe.constants import RARITY
-from PyPoE.poe.file.dat import DatReader, RelationalReader
+from PyPoE.poe.file.dat import DatReader, DatRecord, RelationalReader
 from PyPoE.poe.file.it import ITFile
-from PyPoE.poe.sim.formula import GemTypes, gem_stat_requirement
 
 # =============================================================================
 # Functions
 # =============================================================================
+
+
+def log_error(msg, func):
+    def wrapped(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception:
+            warnings.warn(msg, stacklevel=2)
+            raise
+
+    return wrapped
 
 
 @dataclass
@@ -102,7 +113,12 @@ def _linear_to_srgb(img):
     )
 
 
-def _apply_column_map(infobox, column_map: tuple[tuple[str, dict], ...], list_object):
+def _apply_column_map(
+    infobox, column_map: tuple[tuple[str, dict], ...], list_object: DatRecord | list[DatRecord]
+):
+    if not isinstance(list_object, DatRecord):
+        list_object = list_object[0]
+
     for k, data in column_map:
         value = list_object[k]
         if data.get("condition") and not data["condition"](value):
@@ -111,6 +127,10 @@ def _apply_column_map(infobox, column_map: tuple[tuple[str, dict], ...], list_ob
         if data.get("format"):
             value = data["format"](value)
         infobox[data["template"]] = value
+
+
+def _skip(*_):
+    return False
 
 
 def _type_factory(
@@ -132,12 +152,21 @@ def _type_factory(
             if index_column not in file.index:
                 file.build_index(index_column)
 
+            data: DatRecord | list[DatRecord] = []
             try:
                 data = file.index[index_column][idx]
             except KeyError:
+                pass
+            if not data:
                 if not skip_warning:
                     warnings.warn(f'Missing {data_file} info for "{base_item_type["Name"]}"')
                 return fail_condition
+            elif not isinstance(data, DatRecord):
+                # Handle missing @unique on schema column
+                if len(data) == 1:
+                    data = data[0]
+                else:
+                    raise Exception(f"Multiple matches found for {base_item_type['Id']}")
 
         _apply_column_map(infobox, data_mapping, data)
 
@@ -146,7 +175,7 @@ def _type_factory(
 
         return True
 
-    return func
+    return log_error(f"type_factory error for {data_file}", func)
 
 
 def _simple_conflict_factory(data):
@@ -1937,54 +1966,6 @@ class ItemsParser(SkillParserShared):
         else:
             self.rr2 = None
 
-    def _skip_quest_contracts(self, infobox: OrderedDict, base_item_type):
-        return base_item_type.rowid not in self.rr["HeistContracts.dat64"].index["BaseItemTypesKey"]
-
-    def _tattoo(self, infobox: OrderedDict, base_item_type):
-        if "BaseItemTypesKey" not in self.rr["PassiveSkillTattoos.dat64"].index:
-            self.rr["PassiveSkillTattoos.dat64"].build_index("BaseItemTypesKey")
-        data = next(
-            iter(self.rr["PassiveSkillTattoos.dat64"].index["BaseItemTypesKey"][base_item_type]),
-            None,
-        )
-        if not data:
-            return True
-        try:
-            set = data["Set"]
-            override = data["Override"]
-
-            def format(*vals):
-                return " ".join("{{c|" + fmt + "|" + str(val) + "}}" for fmt, val in vals)
-
-            target = f"{set['Qualifier']} {set['Name']}" if set["Qualifier"] else set["Name"]
-            infobox["tattoo_target"] = target
-            infobox["tattoo_tribe"] = data["Tribe"]
-            if override["Limit"]:
-                infobox["tattoo_limit"] = override["Limit"]["Description"]
-            if override["RequiresAdjacent"]:
-                infobox["tattoo_min_adjacent"] = override["RequiresAdjacent"]
-            if override["MaxAdjacent"]:
-                infobox["tattoo_max_adjacent"] = override["MaxAdjacent"]
-            stats = [s["Id"] for s in override["Stats"]]
-            tr = self.tc["stat_descriptions.txt"].get_translation(
-                stats,
-                override["StatValues"],
-                full_result=True,
-                lang=self._language,
-            )
-            lines = [" ".join(line.splitlines()) for line in tr.lines]
-            if override["Effect"]:
-                skill = override["Effect"]["GrantedEffect"]
-                infobox["tattoo_skill_id"] = skill["Id"]
-                skill_name = skill["ActiveSkill"]["DisplayedName"]
-                link = f"[[Skill:{skill['Id']}|{skill_name}]]"
-                lines = [line.replace(skill_name, link) for line in lines]
-            stat_text = "<br>".join(parser.make_inter_wiki_links(line) for line in lines)
-            infobox["description"] = stat_text
-        except KeyError:
-            return False
-        return True
-
     def _allflame_ember(self, infobox: OrderedDict, base_item_type):
         if "Item" not in self.rr["ItemisedNecropolisPacks.dat64"].index:
             self.rr["ItemisedNecropolisPacks.dat64"].build_index("Item")
@@ -2044,10 +2025,6 @@ class ItemsParser(SkillParserShared):
                 return False
         if skill_gem["VaalVariant_BaseItemTypesKey"]:
             infobox["vaal_variant_id"] = skill_gem["VaalVariant_BaseItemTypesKey"]["Id"]
-        if skill_gem["RegularVariant"]:
-            infobox["is_awakened_support_gem"] = "true"
-        if skill_gem["AwakenedVariant"]:
-            infobox["awakened_variant_id"] = skill_gem["AwakenedVariant"]["BaseItemTypesKey"]["Id"]
         if name:
             infobox["name"] = name
             infobox["base_item_id"] = infobox.pop("metadata_id")
@@ -2059,215 +2036,17 @@ class ItemsParser(SkillParserShared):
             infobox[attr_long + "_percent"] = skill_gem[attr_short]
 
         infobox["gem_tags"] = ", ".join([gt["Tag"] for gt in gem_type["GemTags"] if gt["Tag"]])
-        infobox["gem_shader"] = gem_type["ItemColor"]
 
-        # No longer used
-        #
-        exp_type = skill_gem["ExperienceProgression"]["Id"]
-
-        # TODO: Maybe catch empty stuff here?
-        exp = 0
-        exp_level = []
-        exp_total = []
-        for row in self.rr["ItemExperiencePerLevel.dat64"]:
-            if row["ItemExperienceType"]["Id"] == exp_type:
-                exp_new = row["Experience"]
-                exp_level.append(exp_new - exp)
-                exp_total.append(exp_new)
-                exp = exp_new
-        if not exp_level:
-            console(
-                'No experience progression found for "%s" - assuming max level 1'
-                % base_item_type["Name"],
-                msg=Msg.warning,
-            )
-            exp_total = [0]
-
-        max_level = len(exp_total) - 1
         ge = gem_type["GrantedEffect"]
 
-        primary = OrderedDict()
-        self._skill(
-            gra_eff=ge,
-            infobox=primary,
-            parsed_args=self._parsed_args,
-            msg_name=gem_type["Name"],
-            max_level=max_level,
-        )
-
-        # Some skills have a secondary skill effect.
-        #
-        # Currently there is no great way of handling this in the wiki, so the
-        # secondary effects are just added. Skills that have their own entry
-        # are excluded so we don't get vaal skill gems here.
-        second = gem_type["GrantedEffect2"]
-        vaal = False
-        if second:
-            infobox["secondary_skill_id"] = second["Id"]
-            index = None
-            try:
-                index = self.rr["GemEffects.dat64"].index["GrantedEffect"]
-            except KeyError:
-                self.rr["GemEffects.dat64"].build_index("GrantedEffect")
-                index = self.rr["GemEffects.dat64"].index["GrantedEffect"]
-
-            if index[second]:
-                # If there is a skill granting this as its primary effect, skip it
-                vaal = True
-
-        if gem_type["GrantedEffectHardmode"] and not any(
-            tag["Id"] == "movement" for tag in gem_type["GemTags"]
-        ):
-            infobox["ruthless_skill_id"] = gem_type["GrantedEffectHardmode"]["Id"]
-        if gem_type["GrantedEffect2Hardmode"] and not any(
-            tag["Id"] == "movement" for tag in gem_type["GemTags"]
-        ):
-            infobox["ruthless_secondary_skill_id"] = gem_type["GrantedEffect2Hardmode"]["Id"]
-
-        if self._parsed_args.omit_skill_data:
-            infobox["skill_id"] = ge["Id"]
-        elif second and not vaal:
-            secondary = OrderedDict()
-            self._skill(
-                gra_eff=second,
-                infobox=secondary,
-                parsed_args=self._parsed_args,
-                msg_name=base_item_type["Name"],
-                max_level=max_level,
-            )
-
-            def get_stat(i, prefix, data):
-                return (data["%s_stat%s_id" % (prefix, i)], data["%s_stat%s_value" % (prefix, i)])
-
-            def set_stat(i, prefix, sid, sv):
-                infobox["%s_stat%s_id" % (prefix, i)] = sid
-                infobox["%s_stat%s_value" % (prefix, i)] = sv
-
-            def cp_stats(prefix):
-                i = 1
-                while True:
-                    try:
-                        sid, sv = get_stat(i, prefix, primary)
-                    except KeyError:
-                        break
-                    set_stat(i, prefix, sid, sv)
-                    i += 1
-
-                j = 1
-                while True:
-                    try:
-                        sid, sv = get_stat(j, prefix, secondary)
-                    except KeyError:
-                        break
-                    set_stat(j + i - 1, prefix, sid, sv)
-                    j += 1
-
-            def get_quality_stats(prefix, source, result):
-                i = 1
-                while True:
-                    try:
-                        id, value = get_stat(i, prefix, source)
-                        if id != "dummy_stat_display_nothing":
-                            result[id] = value
-                    except KeyError:
-                        return
-                    i += 1
-
-            def cp_quality(prefix):
-                stats: OrderedDict[str, int] = OrderedDict()
-                stextkey = f"{prefix}_stat_text"
-                text1 = primary.get(stextkey)
-                text2 = secondary.get(stextkey)
-                stext = text1 if text1 == text2 else "<br>".join(filter(bool, [text1, text2]))
-                if not stext:
-                    return
-                # Both primary and secondary can have stats eg CoC has
-                # quality_type1_stat1_id = attack_critical_strike_chance_+% on primary and
-                # quality_type1_stat1_id = spell_critical_strike_chance_+% on secondary
-                get_quality_stats(prefix, primary, stats)
-                get_quality_stats(prefix, secondary, stats)
-                for i, (sid, sv) in enumerate(stats.items()):
-                    set_stat(i + 1, prefix, sid, sv)
-                infobox[stextkey] = stext
-
-            for k, v in list(primary.items()) + list(secondary.items()):
-                # Just override the stuff if needs be.
-                if "stat" not in k[k.startswith("static_") and 6 :] and k not in infobox.keys():
-                    infobox[k] = v
-
-            cp_quality("quality_type1")
-            cp_quality("quality_type2")
-            cp_quality("quality_type3")
-            cp_quality("quality_type4")
-
-            infobox["stat_text"] = "<br>".join(
-                [x for x in (primary["stat_text"], secondary["stat_text"]) if x]
-            )
-
-            # Stat merging...
-            cp_stats("static")
-            lv = 1
-            while True:
-                prefix = "level%s" % lv
-                try:
-                    primary[prefix]
-                except KeyError:
-                    break
-
-                for k in ("_stat_text",):
-                    k = prefix + k
-                    infobox[k] = "<br>".join([x[k] for x in (primary, secondary) if k in x])
-                cp_stats(prefix)
-
-                lv += 1
-        else:
-            for k, v in primary.items():
-                infobox[k] = v
+        infobox["skill_id"] = ge["Id"]
+        additional = gem_type["AdditionalGrantedEffects"]
+        if additional:
+            infobox["additional_skill_ids"] = ", ".join(a["Id"] for a in additional)
 
         # some descriptions come from active skills which are parsed in above function
         if ge["IsSupport"] and gem_type["SupportText"]:
-            infobox["gem_description"] = gem_type["SupportText"].replace("\n", "<br>")
-
-        #
-        # Output handling for progression
-        #
-
-        # Body
-        map2 = {
-            "Str": "strength_requirement",
-            "Int": "intelligence_requirement",
-            "Dex": "dexterity_requirement",
-        }
-
-        if base_item_type["ItemClassesKey"]["Id"] == "Active Skill Gem":
-            gtype = GemTypes.active
-        elif base_item_type["ItemClassesKey"]["Id"] == "Support Skill Gem":
-            gtype = GemTypes.support
-
-        # +1 for gem levels starting at 1
-        # +1 for being able to corrupt gems to +1 level
-        # +1 for python counting only up to, but not including the number
-        for i in range(1, max_level + 3):
-            prefix = "level%s_" % i
-            for attr in ("Str", "Dex", "Int"):
-                if skill_gem[attr]:
-                    try:
-                        infobox[prefix + map2[attr]] = gem_stat_requirement(
-                            level=primary.get(prefix + "level_requirement"),
-                            gtype=gtype,
-                            multi=skill_gem[attr],
-                        )
-
-                    except ValueError as e:
-                        warnings.warn(str(e))
-                    except KeyError:
-                        print(base_item_type["Id"], base_item_type["Name"])
-                        raise
-            try:
-                # Index starts at 0 while levels start at 1
-                infobox[prefix + "experience"] = exp_total[i - 1]
-            except IndexError:
-                pass
+            infobox["support_text"] = process_keywords(gem_type["SupportText"])
 
         return True
 
@@ -2276,7 +2055,7 @@ class ItemsParser(SkillParserShared):
         return True
 
     _type_attribute = _type_factory(
-        data_file="ComponentAttributeRequirements.dat64",
+        data_file="AttributeRequirements.dat64",
         data_mapping=(
             (
                 "ReqStr",
@@ -2302,14 +2081,6 @@ class ItemsParser(SkillParserShared):
         ),
         row_index=False,
     )
-
-    def _type_amulet(self, infobox, base_item_type):
-        match = re.search("Talisman([0-9])", base_item_type["Id"])
-        if match:
-            infobox["is_talisman"] = True
-            infobox["talisman_tier"] = match.group(1)
-
-        return True
 
     _type_armour = _type_factory(
         data_file="ArmourTypes.dat64",
@@ -2395,15 +2166,12 @@ class ItemsParser(SkillParserShared):
     )
 
     def _apply_flask_buffs(self, infobox, base_item_type, flasks):
-        for i, value in enumerate(flasks["BuffStatValues"], start=1):
-            infobox["buff_value%s" % i] = value
-
-        if flasks["BuffDefinitionsKey"]:
-            stats = [s["Id"] for s in flasks["BuffDefinitionsKey"]["StatsKeys"]] + [
-                s["Id"] for s in flasks["BuffDefinitionsKey"]["Binary_StatsKeys"]
+        for buff in flasks["UtilityBuff"]:
+            stats = [s["Id"] for s in buff["BuffDefinitionsKey"]["StatsKeys"]] + [
+                s["Id"] for s in buff["BuffDefinitionsKey"]["Binary_StatsKeys"]
             ]
-            values = flasks["BuffStatValues"] + [
-                1 for _ in flasks["BuffDefinitionsKey"]["Binary_StatsKeys"]
+            values = buff["StatValues"] + [
+                1 for _ in buff["BuffDefinitionsKey"]["Binary_StatsKeys"]
             ]
             tr = self.tc["stat_descriptions.txt"].get_translation(
                 stats,
@@ -2526,7 +2294,7 @@ class ItemsParser(SkillParserShared):
         data_file="CurrencyItems.dat64",
         data_mapping=(
             (
-                "Stacks",
+                "StackSize",
                 {
                     "template": "stack_size",
                     "condition": None,
@@ -2773,13 +2541,6 @@ class ItemsParser(SkillParserShared):
         else:
             infobox["map_area_level"] = maps["Regular_WorldAreasKey"]["AreaLevel"]
 
-        """# Regular items are handled in the main function
-        if maps['Tier'] < 17:
-            self._process_purchase_costs(
-                self.rr['MapPurchaseCosts.dat64'].index['Tier'][maps['Tier']],
-                infobox
-            )"""
-
     # 3.15
     # This is a hack and should be done better.
     # TODO: properly parse map series
@@ -2859,161 +2620,25 @@ class ItemsParser(SkillParserShared):
         function=_maps_extra,
     )
 
-    def _map_fragment_extra(self, infobox, base_item_type, map_fragment_mods):
-        if map_fragment_mods["ModsKeys"]:
-            i = 1
-            while infobox.get("map_fragment_bonus%s" % i) is not None:
-                i += 1
-            for mod in map_fragment_mods["ModsKeys"]:
-                infobox["map_fragment_bonus%s" % i] = mod["Id"]
-                i += 1
-
-    _type_map_fragment = _type_factory(
-        data_file="MapFragmentMods.dat64",
-        data_mapping=(
-            (
-                "MapFragmentLimit",
-                {
-                    "template": "map_fragment_limit",
-                },
-            ),
-        ),
-        row_index=True,
-        function=_map_fragment_extra,
-        fail_condition=True,
-    )
-
-    def _essence_extra(self, infobox, base_item_type, essence):
-        infobox["is_essence"] = True
-
-        #
-        # Essence description
-        #
-        def get_str(k):
-            return self.rr["ClientStrings.dat64"].index["Id"]["EssenceCategory%s" % k]["Text"]
-
-        essence_categories = OrderedDict(
-            (
-                (
-                    None,
-                    ("OneHandWeapon", "TwoHandWeapon"),
-                ),
-                (
-                    "MeleeWeapon",
-                    (),
-                ),
-                (
-                    "RangedWeapon",
-                    ("Wand", "Bow"),
-                ),
-                (
-                    "Weapon",
-                    ("TwoHandMeleeWeapon",),
-                ),
-                ("Armour", ("Gloves", "Boots", "BodyArmour", "Helmet", "Shield")),
-                ("Quiver", ()),
-                ("Jewellery", ("Amulet", "Ring", "Belt")),
-            )
-        )
-
-        out = []
-
-        if essence["ItemLevelRestriction"] != 0:
-            out.append(
-                self.rr["ClientStrings.dat64"]
-                .index["Id"]["EssenceModLevelRestriction"]["Text"]
-                .replace("{0}", str(essence["ItemLevelRestriction"]))
-            )
-            out[-1] += "<br />"
-
-        def add_line(text, mod):
-            nonlocal out
-            out.append("%s: %s" % (text, "".join(self._get_stats(mod=mod))))
-
-        item_mod = essence["Display_Items_ModsKey"]
-
-        for category, rows in essence_categories.items():
-            if category is None:
-                category_mod = None
-            else:
-                category_mod = essence["Display_%s_ModsKey" % category]
-
-            cur = len(out)
-            for row_key in rows:
-                mod = essence["Display_%s_ModsKey" % row_key]
-                if mod is None:
-                    continue
-                if mod == category_mod:
-                    continue
-                if mod == item_mod:
-                    continue
-
-                add_line(get_str(row_key), mod)
-
-            if category_mod is not None and category_mod != item_mod:
-                text = get_str(category)
-                if cur != len(out):
-                    text = get_str("Other").replace("{0}", text)
-                add_line(text, category_mod)
-
-        if item_mod:
-            # TODO: Can't find items in clientstrings
-            add_line(get_str("Other").replace("{0}", "Items"), item_mod)
-
-        infobox["description"] += "<br />" + "<br />".join(out)
-
-        return True
-
     _type_essence = _type_factory(
         data_file="Essences.dat64",
         data_mapping=(
             (
-                "DropLevel",
+                "CraftTag",
                 {
-                    "template": "drop_level",
-                    "condition": lambda v: v,
-                    "format": lambda v: v[0],
+                    "template": "craft_tag",
+                    "format": lambda v: v["DisplayString"],
                 },
             ),
             (
-                "ItemLevelRestriction",
-                {
-                    "template": "essence_level_restriction",
-                    "condition": lambda v: v > 0,
-                },
-            ),
-            (
-                "Level",
-                {
-                    "template": "essence_level",
-                    "condition": lambda v: v > 0,
-                },
-            ),
-            (
-                "EssenceTypeKey",
-                {
-                    "template": "essence_type",
-                    "format": lambda v: v["EssenceType"],
-                },
-            ),
-            (
-                "EssenceTypeKey",
-                {
-                    "template": "essence_category",
-                    "format": lambda v: v["WordsKey"]["Text"],
-                },
-            ),
-            (
-                "Monster_ModsKeys",
+                "MonsterMod",
                 {
                     "template": "essence_monster_modifier_ids",
-                    "format": lambda v: ", ".join([m["Id"] for m in v]),
-                    "condition": lambda v: v,
+                    "format": lambda v: v["Id"],
                 },
             ),
         ),
         row_index=True,
-        function=_essence_extra,
         fail_condition=True,
         skip_warning=True,
     )
@@ -3033,20 +2658,6 @@ class ItemsParser(SkillParserShared):
         skip_warning=True,
     )
 
-    _type_labyrinth_trinket = _type_factory(
-        data_file="LabyrinthTrinkets.dat64",
-        data_mapping=(
-            (
-                "Buff_BuffDefinitionsKey",
-                {
-                    "template": "description",
-                    "format": lambda v: v["Description"],
-                },
-            ),
-        ),
-        row_index=True,
-    )
-
     _type_incubator = _type_factory(
         data_file="Incubators.dat64",
         data_mapping=(
@@ -3061,287 +2672,10 @@ class ItemsParser(SkillParserShared):
         row_index=True,
     )
 
-    def _harvest_seed_extra(self, infobox, base_item_type, harvest_object):
-        if not self.rr["HarvestSeedTypes.dat64"].index.get("HarvestObjectsKey"):
-            self.rr["HarvestSeedTypes.dat64"].build_index("HarvestObjectsKey")
-
-        harvest_seed = self.rr["HarvestSeedTypes.dat64"].index["HarvestObjectsKey"][
-            harvest_object.rowid
-        ]
-
-        _apply_column_map(
-            infobox,
-            (
-                (
-                    "Text",
-                    {
-                        "template": "seed_effect",
-                    },
-                ),
-                (
-                    "Tier",
-                    {
-                        "template": "seed_tier",
-                    },
-                ),
-                (
-                    "GrowthCycles",
-                    {
-                        "template": "seed_growth_cycles",
-                    },
-                ),
-                (
-                    "RequiredNearbySeed_Tier",
-                    {
-                        "template": "seed_required_nearby_seed_tier",
-                        "condition": lambda v: v > 0,
-                    },
-                ),
-                (
-                    "RequiredNearbySeed_Amount",
-                    {
-                        "template": "seed_required_nearby_seed_amount",
-                        "condition": lambda v: v > 0,
-                    },
-                ),
-                (
-                    "WildLifeforceConsumedPercentage",
-                    {
-                        "template": "seed_consumed_wild_lifeforce_percentage",
-                        "condition": lambda v: v > 0,
-                    },
-                ),
-                (
-                    "VividLifeforceConsumedPercentage",
-                    {
-                        "template": "seed_consumed_vivid_lifeforce_percentage",
-                        "condition": lambda v: v > 0,
-                    },
-                ),
-                (
-                    "PrimalLifeforceConsumedPercentage",
-                    {
-                        "template": "seed_consumed_primal_lifeforce_percentage",
-                        "condition": lambda v: v > 0,
-                    },
-                ),
-                (
-                    "HarvestCraftOptionsKeys",
-                    {
-                        "template": "seed_granted_craft_option_ids",
-                        "format": lambda v: ",".join([k["Id"] for k in v]),
-                        "condition": lambda v: v,
-                    },
-                ),
-            ),
-            harvest_seed,
-        )
-
-        return True
-
-    _type_harvest_seed = _type_factory(
-        data_file="HarvestObjects.dat64",
-        data_mapping=(
-            (
-                "ObjectType",
-                {
-                    "template": "seed_type_id",
-                    "format": lambda v: v.name.lower(),
-                },
-            ),
-        ),
-        function=_harvest_seed_extra,
-        # fail_condition=True,
-        row_index=True,
-    )
-
-    def _harvest_plant_booster_extra(self, infobox, base_item_type, harvest_object):
-        if not self.rr["HarvestSeedTypes.dat64"].index.get("HarvestObjectsKey"):
-            self.rr["HarvestSeedTypes.dat64"].build_index("HarvestObjectsKey")
-
-        harvest_plant_booster = self.rr["HarvestPlantBoosters.dat64"].index["HarvestObjectsKey"][
-            harvest_object.rowid
-        ]
-
-        _apply_column_map(
-            infobox,
-            (
-                (
-                    "Radius",
-                    {
-                        "template": "plant_booster_radius",
-                    },
-                ),
-                (
-                    "Lifeforce",
-                    {
-                        "template": "plant_booster_lifeforce",
-                        "condition": lambda v: v > 0,
-                    },
-                ),
-                (
-                    "AdditionalCraftingOptionsChance",
-                    {
-                        "template": "plant_booster_additional_crafting_options",
-                        "condition": lambda v: v > 0,
-                    },
-                ),
-                (
-                    "RareExtraChances",
-                    {
-                        "template": "plant_booster_extra_chances",
-                        "condition": lambda v: v > 0,
-                    },
-                ),
-            ),
-            harvest_plant_booster,
-        )
-
-        return True
-
-    _type_harvest_plant_booster = _type_factory(
-        data_file="HarvestObjects.dat64",
-        data_mapping=(),
-        function=_harvest_plant_booster_extra,
-        # fail_condition=True,
-        row_index=True,
-    )
-
-    _type_heist_contract = _type_factory(
-        data_file="HeistContracts.dat64",
-        data_mapping=(
-            (
-                "HeistAreasKey",
-                {
-                    "template": "heist_area_id",
-                    "format": lambda v: v["Id"],
-                },
-            ),
-        ),
-        row_index=True,
-    )
-
-    _type_heist_equipment = _type_factory(
-        data_file="HeistEquipment.dat64",
-        data_mapping=(
-            (
-                "RequiredJob_HeistJobsKey",
-                {
-                    "template": "heist_required_job_id",
-                    "format": lambda v: v["Id"],
-                    "condition": lambda v: v,
-                },
-            ),
-            (
-                "RequiredLevel",
-                {
-                    "template": "heist_required_job_level",
-                    "condition": lambda v: v > 0,
-                },
-            ),
-        ),
-        row_index=True,
-    )
-
-    _type_corpse = _type_factory(
-        data_file="ItemisedCorpse.dat64",
-        index_column="BaseItem",
-        data_mapping=(
-            (
-                "MonsterVariety",
-                {
-                    "template": "monster_id",
-                    "format": lambda v: v["Id"],
-                    "condition": lambda v: v,
-                },
-            ),
-            (
-                "MonsterAbilities",
-                {
-                    "template": "monster_abilities",
-                    "format": lambda v: "<br>".join(str(v).splitlines()),
-                    "condition": lambda v: v,
-                },
-            ),
-            (
-                "MonsterCategory",
-                {
-                    "template": "monster_category",
-                    "format": lambda v: v["Name"],
-                    "condition": lambda v: v,
-                },
-            ),
-        ),
-        row_index=True,
-    )
-
-    _type_tincture = _type_factory(
-        data_file="Tinctures.dat64",
-        index_column="BaseItem",
-        data_mapping=(
-            (
-                "DebuffInterval",
-                {
-                    "template": "tincture_mana_burn",
-                    "format": lambda v: v / 1000,
-                    "condition": lambda v: v,
-                },
-            ),
-            (
-                "Cooldown",
-                {
-                    "template": "tincture_cooldown",
-                    "format": lambda v: f"{v / 1000:g}",
-                    "condition": lambda v: v,
-                },
-            ),
-        ),
-        row_index=True,
-    )
-
-    _type_sentinel = _type_factory(
-        data_file="DroneBaseTypes.dat64",
-        index_column="BaseType",
-        data_mapping=(
-            (
-                "Charges",
-                {
-                    "template": "sentinel_charge",
-                    "condition": lambda v: v,
-                },
-            ),
-            (
-                "Duration",
-                {
-                    "template": "sentinel_duration",
-                    "condition": lambda v: v,
-                },
-            ),
-            (
-                "EnemyLimit",
-                {
-                    "template": "sentinel_empowers",
-                    "condition": lambda v: v,
-                },
-            ),
-            (
-                "Empowerment",
-                {
-                    "template": "sentinel_empowerment",
-                    "condition": lambda v: v,
-                },
-            ),
-        ),
-        row_index=True,
-    )
-
-    _cls_map = dict()
     """
     This defines the expected data elements for an item class.
     """
     _cls_map = {
-        # Jewellery
-        "Amulet": (_type_amulet,),
         # Armour types
         "Armour": (
             _type_level,
@@ -3376,11 +2710,6 @@ class ItemsParser(SkillParserShared):
             _type_weapon,
         ),
         "Dagger": (
-            _type_level,
-            _type_attribute,
-            _type_weapon,
-        ),
-        "Rune Dagger": (
             _type_level,
             _type_attribute,
             _type_weapon,
@@ -3461,44 +2790,41 @@ class ItemsParser(SkillParserShared):
         "Support Skill Gem": (_skill_gem,),
         # Currency-like items
         "Currency": (_type_currency,),
-        "StackableCurrency": (_type_currency, _type_essence, _type_blight_item, _tattoo),
+        "StackableCurrency": (_type_currency, _type_essence, _type_blight_item),
         "DelveSocketableCurrency": (_type_currency,),
         "DelveStackableSocketableCurrency": (_type_currency,),
         "HideoutDoodad": (_type_currency, _type_hideout_doodad),
         "Microtransaction": (_type_currency, _type_microtransaction),
         "DivinationCard": (_type_currency,),
         "IncubatorStackable": (_type_currency,),
-        "HarvestSeed": (_type_currency, _type_harvest_seed),
-        "HarvestPlantBooster": (_type_currency, _type_harvest_plant_booster),
+        "HarvestSeed": (_skip,),
+        "HarvestPlantBooster": (_skip,),
         # Labyrinth stuff
         # 'LabyrinthItem': (),
-        "LabyrinthTrinket": (_type_labyrinth_trinket,),
+        "LabyrinthTrinket": (_skip,),
         # 'LabyrinthMapItem': (),
         # Misc
         "Map": (_type_map,),
-        "MapFragment": (_type_currency, _type_map_fragment),
-        "QuestItem": (_skip_quest_contracts,),
-        "AtlasRegionUpgradeItem": (),
-        "MetamorphosisDNA": (),
+        "MapFragment": (_type_currency,),
+        "QuestItem": (),
+        "AtlasRegionUpgradeItem": (_skip,),
+        "MetamorphosisDNA": (_skip,),
         # heist league
-        "HeistContract": (_type_heist_contract,),
-        "HeistEquipmentWeapon": (_type_heist_equipment,),
-        "HeistEquipmentTool": (_type_heist_equipment,),
-        "HeistEquipmentUtility": (_type_heist_equipment,),
-        "HeistEquipmentReward": (_type_heist_equipment,),
-        "HeistBlueprint": (),
-        "Trinket": (),
-        "HeistObjective": (),
+        "HeistContract": (_skip,),
+        "HeistEquipmentWeapon": (_skip,),
+        "HeistEquipmentTool": (_skip,),
+        "HeistEquipmentUtility": (_skip,),
+        "HeistEquipmentReward": (_skip,),
+        "HeistBlueprint": (_skip,),
+        "Trinket": (_skip,),
+        "HeistObjective": (_skip,),
         "Breachstone": (_type_currency,),
-        "ItemisedCorpse": (_type_corpse,),
-        "NecropolisPack": (_allflame_ember,),
+        "ItemisedCorpse": (_skip,),
+        "NecropolisPack": (_skip,),
         "InstanceLocalItem": (_type_currency,),
-        "Tincture": (
-            _type_level,
-            _type_tincture,
-        ),
+        "Tincture": (_skip,),
         "Gold": (_type_currency,),
-        "SentinelDrone": (_type_sentinel,),
+        "SentinelDrone": (_skip,),
     }
 
     _conflict_active_skill_gems_map = {
@@ -3611,9 +2937,6 @@ class ItemsParser(SkillParserShared):
     def _conflict_divination_card(self, infobox, base_item_type, rr, language):
         return base_item_type["Name"]
 
-    def _conflict_labyrinth_map_item(self, infobox, base_item_type, rr, language):
-        return base_item_type["Name"]
-
     def _conflict_misc_map_item(self, infobox, base_item_type, rr, language):
         return base_item_type["Name"]
 
@@ -3635,10 +2958,6 @@ class ItemsParser(SkillParserShared):
     def _conflict_breachstone(self, infobox, base_item_type, rr, language):
         return base_item_type["Name"]
 
-    def _conflict_tincture(self, infobox, base_item_type, rr, language):
-        if base_item_type.rowid in rr["Tinctures.dat64"].index["BaseItem"]:
-            return base_item_type["Name"]
-
     _conflict_resolver_map = {
         "Active Skill Gem": _conflict_active_skill_gems,
         "QuestItem": _conflict_quest_items,
@@ -3647,7 +2966,6 @@ class ItemsParser(SkillParserShared):
         "Map": _conflict_maps,
         "MapFragment": _conflict_map_fragments,
         "DivinationCard": _conflict_divination_card,
-        "LabyrinthMapItem": _conflict_labyrinth_map_item,
         "MiscMapItem": _conflict_misc_map_item,
         "DelveSocketableCurrency": _conflict_delve_socketable_currency,
         "DelveStackableSocketableCurrency": _conflict_delve_stackable_socketable_currency,
@@ -3655,7 +2973,6 @@ class ItemsParser(SkillParserShared):
         "Incubator": _conflict_incubator,
         "IncubatorStackable": _conflict_incubator_stackable,
         "Breachstone": _conflict_breachstone,
-        "Tincture": _conflict_tincture,
     }
 
     def _parse_class_filter(self, parsed_args):
@@ -3851,7 +3168,6 @@ class ItemsParser(SkillParserShared):
 
         r = ExporterResult()
         self.rr["BaseItemTypes.dat64"].build_index("Name")
-        self.rr["MapPurchaseCosts.dat64"].build_index("Tier")
 
         if self._language != "English" and parsed_args.english_file_link:
             self.rr2["BaseItemTypes.dat64"].build_index("Name")
@@ -4276,8 +3592,6 @@ class ItemsParser(SkillParserShared):
             purple_ico = purple_ico.replace(".dds", ".png")
             purple_img = Image.open(purple_ico)
 
-        self.rr["MapSeriesTiers.dat64"].build_index("MapsKey")
-        self.rr["MapPurchaseCosts.dat64"].build_index("Tier")
         # self.rr['UniqueMaps.dat64'].build_index('WorldAreasKey')
 
         for row, atlas_node in map_series_tiers.items():
@@ -4353,11 +3667,6 @@ class ItemsParser(SkillParserShared):
 
                 infobox["flavour_text"] = (
                     atlas_node["FlavourTextKey"]["Text"].replace("\n", "<br>").replace("\r", "")
-                )
-
-            if 0 < tier < 17:
-                self._process_purchase_costs(
-                    self.rr["MapPurchaseCosts.dat64"].index["Tier"][tier], infobox
                 )
 
             # Skip maps that aren't in the rotation this map series.

@@ -1415,7 +1415,7 @@ class BaseParser:
         self.specification = load(version=config.get_option("version"))
 
         self.base_path = base_path
-        self.file_system = FileSystem(root_path=get_content_path())
+        self.file_system = FileSystem(root_path=get_content_path(self.specification.sequel))
 
         opt = {
             "use_dat_value": False,
@@ -1972,10 +1972,6 @@ def make_inter_wiki_links(string):
         string = "".join(out)
 
     return string
-
-
-def process_keywords(text: str, newline_to_br=True):
-    text.replace("[", "[[").replace("]", "]]").replace("\n", "<br>")
 
 
 def find_template(wikitext, template_name):

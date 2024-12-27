@@ -41,8 +41,8 @@ from typing import Dict, List, Union
 # Self
 from PyPoE.cli.core import Msg, console
 from PyPoE.cli.exporter import config
-from PyPoE.cli.exporter.wiki import parser
-from PyPoE.cli.exporter.wiki.handler import ExporterHandler, ExporterResult
+from PyPoE.cli.exporter.poe2wiki import parser
+from PyPoE.cli.exporter.poe2wiki.handler import ExporterHandler, ExporterResult
 from PyPoE.poe.file.stat_filters import StatFilterFile
 from PyPoE.poe.file.translations import StatValue, TranslationFile
 

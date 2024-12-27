@@ -37,8 +37,8 @@ import re
 from collections import OrderedDict, defaultdict
 from functools import partial
 
-from PyPoE.cli.exporter.wiki.handler import ExporterHandler, ExporterResult
-from PyPoE.cli.exporter.wiki.parser import BaseParser, TagHandler
+from PyPoE.cli.exporter.poe2wiki.handler import ExporterHandler, ExporterResult
+from PyPoE.cli.exporter.poe2wiki.parser import BaseParser, TagHandler
 
 # Self
 from PyPoE.poe.text import parse_description_tags

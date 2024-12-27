@@ -37,8 +37,8 @@ from functools import partialmethod
 
 # Self
 from PyPoE.cli.core import Msg, console
-from PyPoE.cli.exporter.wiki import parser
-from PyPoE.cli.exporter.wiki.handler import ExporterHandler, ExporterResult
+from PyPoE.cli.exporter.poe2wiki import parser
+from PyPoE.cli.exporter.poe2wiki.handler import ExporterHandler, ExporterResult
 
 # =============================================================================
 # Globals

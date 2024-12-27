@@ -537,7 +537,7 @@ class DatReader(ReprMixin):
             Whether to automatically build the index for unique columns after
             reading.
         x64 : bool
-            Whether the reader should run in 64 bit mode for dat64 files.
+            Whether the reader should run in 64 bit mode for datc64 files.
 
         Raises
         ------
@@ -556,6 +556,8 @@ class DatReader(ReprMixin):
         self.table_length = 0
         self.table_record_length = 0
         self.table_rows = 0
+
+        file_name = file_name.replace(".datc64", ".dat64")
         self.file_name = file_name
 
         # Fix for the look up
@@ -666,10 +668,15 @@ class DatReader(ReprMixin):
 
         # Second loop
         for row in self:
+
+            def get_idx(column):
+                idx = row[column]
+                return idx
+
             for column in columns_1to1:
-                self.index[column][row[column]] = row
+                self.index[column][get_idx(column)] = row
             for column in columns_1toN:
-                self.index[column][row[column]].append(row)
+                self.index[column][get_idx(column)].append(row)
             for column in columns_NtoN:
                 for value in row[column]:
                     self.index[column][value].append(row)
@@ -1064,6 +1071,7 @@ class RelationalReader(AbstractFileCache[DatFile]):
         **kwargs,
     ):
         self.raise_error_on_missing_relation = raise_error_on_missing_relation
+        self.specification = specification
         if language == "English" or language is None:
             self._language = ""
         else:
@@ -1079,10 +1087,11 @@ class RelationalReader(AbstractFileCache[DatFile]):
 
         * self['DF.dat'] <==> read_file('Data/{language}DF.dat').reader
         * self['Data/DF.dat'] <==> read_file('Data/{language}DF.dat').reader
+        * self['DF.dat64'] <==> self['DF.datc64']
         """
         if item.startswith("Data/"):
             item = item[len("Data/") :]
-        item = "Data/" + self._language + item
+        item = "Data/" + self._language + item.replace(".dat64", ".datc64")
 
         return self.get_file(item).reader
 
@@ -1183,7 +1192,7 @@ class RelationalReader(AbstractFileCache[DatFile]):
         for key, spec_row in df.reader.specification.fields.items():
             if spec_row.key:
                 if df.reader.x64:
-                    spec_row_key = spec_row.key.replace(".dat", ".dat64")
+                    spec_row_key = spec_row.key.replace(".dat", ".datc64")
                 else:
                     spec_row_key = spec_row.key
 

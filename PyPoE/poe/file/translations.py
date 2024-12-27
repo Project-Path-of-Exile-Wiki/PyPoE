@@ -2261,7 +2261,7 @@ hardcoded_translation_file = property(
 )
 
 
-def install_data_dependant_quantifiers(relational_reader):
+def install_data_dependant_quantifiers(relational_reader: RelationalReader):
     """
     Install data dependant quantifiers into this class.
 
@@ -2289,13 +2289,14 @@ def install_data_dependant_quantifiers(relational_reader):
         placeholder="<random Tempest modifier>",
     )
 
-    TQRelationalData(
-        id="display_indexable_support",
-        relational_reader=relational_reader,
-        table="IndexableSupportGems.dat64",
-        index_column="Index",
-        placeholder="<random Support Gem>",
-    )
+    if relational_reader.specification.sequel == 1:
+        TQRelationalData(
+            id="display_indexable_support",
+            relational_reader=relational_reader,
+            table="IndexableSupportGems.dat64",
+            index_column="Index",
+            placeholder="<random Support Gem>",
+        )
 
     TQRelationalData(
         id="tree_expansion_jewel_passive",
@@ -2303,21 +2304,23 @@ def install_data_dependant_quantifiers(relational_reader):
         table="PassiveTreeExpansionJewelSizes.dat64",
     )
 
-    TQRelationalData(
-        id="affliction_reward_type",
-        relational_reader=relational_reader,
-        table="AfflictionRewardTypeVisuals.dat64",
-        index_column="AfflictionRewardTypes",
-        placeholder="<Delirium reward>",
-    )
+    if relational_reader.specification.sequel == 1:
+        TQRelationalData(
+            id="affliction_reward_type",
+            relational_reader=relational_reader,
+            table="AfflictionRewardTypeVisuals.dat64",
+            index_column="AfflictionRewardTypes",
+            placeholder="<Delirium reward>",
+        )
 
-    TQRelationalData(
-        id="display_indexable_skill",
-        relational_reader=relational_reader,
-        table="IndexableSkillGems.dat64",
-        index_column="Index",
-        placeholder="<Random Skill>",
-    )
+    if relational_reader.specification.sequel == 1:
+        TQRelationalData(
+            id="display_indexable_skill",
+            relational_reader=relational_reader,
+            table="IndexableSkillGems.dat64",
+            index_column="Index",
+            placeholder="<Random Skill>",
+        )
 
     TQRelationalData(
         id="passive_hash",

@@ -212,7 +212,9 @@ def is_file(value, *args, exists=True, allow_empty=False, **kwargs):
         return value
 
 
-def is_directory(value, *args, exists=True, allow_empty=False, make_absolute=False, **kwargs):
+def is_directory(
+    value, *args, exists=True, allow_empty=False, make_absolute=False, allow_http=False, **kwargs
+):
     """
     Checks whether the value is a valid directory path (and optionally whether
     it exists).
@@ -240,6 +242,8 @@ def is_directory(value, *args, exists=True, allow_empty=False, make_absolute=Fal
     """
     if allow_empty and value == "":
         return ""
+    elif allow_http and value.startswith("http"):
+        return value
     else:
         _exists(value, exists)
         if not os.path.isdir(value):

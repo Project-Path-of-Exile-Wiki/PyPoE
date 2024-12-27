@@ -41,6 +41,7 @@ __all__ = [
 ]
 
 specification = Specification(
+    # <version>
     {
         # <specification>
     }

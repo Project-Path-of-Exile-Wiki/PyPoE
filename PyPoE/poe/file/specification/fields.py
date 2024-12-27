@@ -229,7 +229,8 @@ class Specification(dict[str, "File"]):
     Specification file
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, sequel: int, *args, **kwargs):
+        self.sequel = sequel
         super().__init__(*args, **kwargs)
 
     def validate(self):

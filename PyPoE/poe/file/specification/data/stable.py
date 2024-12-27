@@ -38,6 +38,7 @@ __all__ = [
 ]
 
 specification = Specification(
+    1,
     {
         "AbyssObjects.dat": File(
             fields=(
@@ -25036,5 +25037,5 @@ specification = Specification(
                 ),
             ),
         ),
-    }
+    },
 )

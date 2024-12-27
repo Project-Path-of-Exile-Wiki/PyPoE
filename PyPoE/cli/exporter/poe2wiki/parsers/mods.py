@@ -42,8 +42,8 @@ from functools import partialmethod
 
 from PyPoE.cli.core import Msg, console
 from PyPoE.cli.exporter import config
-from PyPoE.cli.exporter.wiki.handler import ExporterHandler, ExporterResult
-from PyPoE.cli.exporter.wiki.parser import BaseParser, WikiCondition
+from PyPoE.cli.exporter.poe2wiki.handler import ExporterHandler, ExporterResult
+from PyPoE.cli.exporter.poe2wiki.parser import BaseParser, WikiCondition
 
 # Self
 from PyPoE.poe import text
