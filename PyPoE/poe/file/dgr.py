@@ -1,5 +1,4 @@
 import re
-from itertools import batched
 
 from PyPoE.poe.file.shared import AbstractFile, ParserError
 
@@ -113,7 +112,7 @@ class DGRFile(AbstractFile):
                 {
                     "to": to,
                     "from": fr,
-                    "path": list(batched(path, 2)),
+                    "path": [path[i:][:2] for i in range(0, len(path), 2)],
                     "unknown": rest,
                 }
             )
