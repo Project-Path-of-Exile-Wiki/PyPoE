@@ -24,7 +24,7 @@ class DGRFile(AbstractFile):
             else:
                 quoted = match.group("quoted")
                 result.append(quoted)
-                if "\\" in quoted:
+                if '"' in quoted or "\\\\" in quoted:
                     # Assume that backslash-escapes work as one would expect? Nah let's throw it up
                     raise ParserError(f'Possible backslash-escape found in "{quoted}"')
             rest = match.group("rest")
