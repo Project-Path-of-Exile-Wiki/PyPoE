@@ -735,9 +735,10 @@ class MOD_DOMAIN(IntEnumOverride):
     AFFLICTION_CHARM = 35
     NECROPOLIS_MONSTER = 36
     UBER_MAP = 37
+    MAP_RELIC = 38
 
     # Items that can't have mods (may need to increase the number when new values are added)
-    MODS_DISALLOWED = 38
+    MODS_DISALLOWED = 39
 
     # legacy names
     MASTER = CRAFTED
