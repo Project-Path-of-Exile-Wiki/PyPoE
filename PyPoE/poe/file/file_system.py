@@ -172,7 +172,7 @@ class FileSystem:
         try:
             with open(os.path.join(self.root_path, path), "rb") as f:
                 return f.read()
-        except FileNotFoundError:
+        except (OSError, FileNotFoundError):
             raise FileNotFoundError(
                 f"Specified file '{path}' can not be found in the Index, content.ggpk or disk"
             )

@@ -3442,8 +3442,8 @@ specification = Specification(
                     key="AchievementItems.dat",
                 ),
                 Field(
-                    name="Data0",
-                    type="ref|list|ref|string",
+                    name="Keys0",
+                    type="ref|list|ref|out",
                 ),
                 Field(
                     name="IgnoreQuantBonus",
@@ -3452,6 +3452,10 @@ specification = Specification(
                 Field(
                     name="Flag2",
                     type="bool",
+                ),
+                Field(
+                    name="Key2",
+                    type="ref|out",
                 ),
             ),
             virtual_fields=(
@@ -4596,14 +4600,26 @@ specification = Specification(
                     unique=True,
                 ),
                 Field(
-                    name="ModsKey",
+                    name="Mod",
                     type="ref|out",
                     key="Mods.dat",
                 ),
                 Field(
-                    name="PassiveSkillsKey",
+                    name="PassiveSkill",
                     type="ref|out",
                     key="PassiveSkills.dat",
+                ),
+            ),
+            virtual_fields=(
+                VirtualField(
+                    name="ModsKey",
+                    fields=("Mod",),
+                    alias=True,
+                ),
+                VirtualField(
+                    name="PassiveSkillsKey",
+                    fields=("PassiveSkill",),
+                    alias=True,
                 ),
             ),
         ),
@@ -16564,6 +16580,18 @@ specification = Specification(
                     name="Flag2",
                     type="bool",
                 ),
+                Field(
+                    name="Unknown15",
+                    type="ref|string",
+                ),
+                Field(
+                    name="Unknown16",
+                    type="ref|string",
+                ),
+                Field(
+                    name="Unknown17",
+                    type="ref|string",
+                ),
             ),
         ),
         "ItemVisualReplacement.dat": File(
@@ -21844,11 +21872,11 @@ specification = Specification(
                     key="MonsterPacks.dat",
                 ),
                 Field(
-                    name="Flag0",
+                    name="Flag",
                     type="bool",
                 ),
                 Field(
-                    name="Unknown0",
+                    name="Weight",
                     type="int",
                 ),
                 Field(
@@ -21857,9 +21885,8 @@ specification = Specification(
                     key="MonsterVarieties.dat",
                 ),
                 Field(
-                    name="Unknown1",
-                    type="ref|generic",
-                    key="MonsterPackEntries.dat",
+                    name="Unknown0",
+                    type="ref|string",
                 ),
             ),
         ),
@@ -24671,6 +24698,7 @@ specification = Specification(
                 Field(
                     name="Id",
                     type="ref|string",
+                    unique=True,
                 ),
                 Field(
                     name="MasteryEffects",
