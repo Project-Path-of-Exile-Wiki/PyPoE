@@ -208,7 +208,7 @@ def test_node_check_hash(temp, patch_file_list, recurse, node_path):
         (False, _TEST_FILE),
         (True, _TEST_FILE + "BAD"),
         (True, _TEST_NODE_PATHS[-1]),
-        (False, _TEST_NODE_PATHS[-1])
+        (False, _TEST_NODE_PATHS[-1]),
         # ,(True, _TEST_NODE_PATHS[-2]) #expensive test
     ],
 )

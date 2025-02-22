@@ -10,20 +10,20 @@ repos:
     hooks:
       - id: no-commit-to-branch
         name: Don't commit to master
-  # Formatters
-  - repo: https://github.com/psf/black
-    rev: 23.9.1
+  # Using this mirror lets us use mypyc-compiled black, which is about 2x faster
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.10.0
     hooks:
       - id: black
   - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
       - id: isort
         args: ["--profile", "black", "--filter-files"]
         name: Sort imports with isort
   # Linter
   - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
+    rev: 7.1.1
     hooks:
       - id: flake8
         exclude: ^PyPoE/ui/

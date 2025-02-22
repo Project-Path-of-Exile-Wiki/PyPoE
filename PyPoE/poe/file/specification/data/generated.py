@@ -3442,8 +3442,8 @@ specification = Specification(
                     key="AchievementItems.dat",
                 ),
                 Field(
-                    name="Data0",
-                    type="ref|list|ref|string",
+                    name="Keys0",
+                    type="ref|list|ref|out",
                 ),
                 Field(
                     name="IgnoreQuantBonus",
@@ -3452,6 +3452,10 @@ specification = Specification(
                 Field(
                     name="Flag2",
                     type="bool",
+                ),
+                Field(
+                    name="Key2",
+                    type="ref|out",
                 ),
             ),
             virtual_fields=(
@@ -4596,14 +4600,26 @@ specification = Specification(
                     unique=True,
                 ),
                 Field(
-                    name="ModsKey",
+                    name="Mod",
                     type="ref|out",
                     key="Mods.dat",
                 ),
                 Field(
-                    name="PassiveSkillsKey",
+                    name="PassiveSkill",
                     type="ref|out",
                     key="PassiveSkills.dat",
+                ),
+            ),
+            virtual_fields=(
+                VirtualField(
+                    name="ModsKey",
+                    fields=("Mod",),
+                    alias=True,
+                ),
+                VirtualField(
+                    name="PassiveSkillsKey",
+                    fields=("PassiveSkill",),
+                    alias=True,
                 ),
             ),
         ),
@@ -11102,7 +11118,7 @@ specification = Specification(
                     type="int",
                 ),
                 Field(
-                    name="Unknown0",
+                    name="Divisor",
                     type="int",
                 ),
             ),
@@ -16564,6 +16580,18 @@ specification = Specification(
                     name="Flag2",
                     type="bool",
                 ),
+                Field(
+                    name="Unknown15",
+                    type="ref|string",
+                ),
+                Field(
+                    name="Unknown16",
+                    type="ref|string",
+                ),
+                Field(
+                    name="Unknown17",
+                    type="ref|string",
+                ),
             ),
         ),
         "ItemVisualReplacement.dat": File(
@@ -20202,12 +20230,14 @@ specification = Specification(
                     unique=True,
                 ),
                 Field(
-                    name="Key0",
+                    name="LimitStat",
                     type="ref|out",
+                    key="Stats.dat",
                 ),
                 Field(
-                    name="Key1",
+                    name="ActiveCountStat",
                     type="ref|out",
+                    key="Stats.dat",
                 ),
                 Field(
                     name="Flag0",
@@ -20978,6 +21008,84 @@ specification = Specification(
                     zip=True,
                 ),
                 VirtualField(
+                    name="Stat1Zip",
+                    fields=(
+                        "StatsKey1",
+                        "Stat1Min",
+                        "Stat1Max",
+                    ),
+                ),
+                VirtualField(
+                    name="Stat2Zip",
+                    fields=(
+                        "StatsKey2",
+                        "Stat2Min",
+                        "Stat2Max",
+                    ),
+                ),
+                VirtualField(
+                    name="Stat3Zip",
+                    fields=(
+                        "StatsKey3",
+                        "Stat3Min",
+                        "Stat3Max",
+                    ),
+                ),
+                VirtualField(
+                    name="Stat4Zip",
+                    fields=(
+                        "StatsKey4",
+                        "Stat4Min",
+                        "Stat4Max",
+                    ),
+                ),
+                VirtualField(
+                    name="Stat5Zip",
+                    fields=(
+                        "StatsKey5",
+                        "Stat5Min",
+                        "Stat5Max",
+                    ),
+                ),
+                VirtualField(
+                    name="Stat6Zip",
+                    fields=(
+                        "StatsKey6",
+                        "Stat6Min",
+                        "Stat6Max",
+                    ),
+                ),
+                VirtualField(
+                    name="StatsKeys",
+                    fields=(
+                        "StatsKey1",
+                        "StatsKey2",
+                        "StatsKey3",
+                        "StatsKey4",
+                        "StatsKey5",
+                        "StatsKey6",
+                    ),
+                ),
+                VirtualField(
+                    name="Stats",
+                    fields=(
+                        "Stat1Zip",
+                        "Stat2Zip",
+                        "Stat3Zip",
+                        "Stat4Zip",
+                        "Stat5Zip",
+                        "Stat6Zip",
+                    ),
+                ),
+                VirtualField(
+                    name="GenerationWeight",
+                    fields=(
+                        "GenerationWeight_TagsKeys",
+                        "GenerationWeight_Values",
+                    ),
+                    zip=True,
+                ),
+                VirtualField(
                     name="Stat1",
                     fields=(
                         "StatsKey1",
@@ -21024,36 +21132,6 @@ specification = Specification(
                         "Stat6Min",
                         "Stat6Max",
                     ),
-                ),
-                VirtualField(
-                    name="StatsKeys",
-                    fields=(
-                        "StatsKey1",
-                        "StatsKey2",
-                        "StatsKey3",
-                        "StatsKey4",
-                        "StatsKey5",
-                        "StatsKey6",
-                    ),
-                ),
-                VirtualField(
-                    name="Stats",
-                    fields=(
-                        "Stat1",
-                        "Stat2",
-                        "Stat3",
-                        "Stat4",
-                        "Stat5",
-                        "Stat6",
-                    ),
-                ),
-                VirtualField(
-                    name="GenerationWeight",
-                    fields=(
-                        "GenerationWeight_TagsKeys",
-                        "GenerationWeight_Values",
-                    ),
-                    zip=True,
                 ),
             ),
         ),
@@ -21157,31 +21235,35 @@ specification = Specification(
                     type="ref|string",
                 ),
                 Field(
-                    name="Key0",
+                    name="Rarity",
                     type="ref|out",
+                    key="Rarity.dat",
                 ),
                 Field(
-                    name="Key1",
+                    name="Stat",
                     type="ref|out",
+                    key="Stats.dat",
                 ),
                 Field(
-                    name="Key2",
+                    name="NotRarity",
                     type="ref|out",
+                    key="Rarity.dat",
+                ),
+                Field(
+                    name="NotStat",
+                    type="ref|list|ref|out",
+                    key="Stats.dat",
+                ),
+                Field(
+                    name="MapBoss",
+                    type="bool",
+                ),
+                Field(
+                    name="NotMapBoss",
+                    type="bool",
                 ),
                 Field(
                     name="Keys0",
-                    type="ref|list|ref|out",
-                ),
-                Field(
-                    name="Flag0",
-                    type="bool",
-                ),
-                Field(
-                    name="Flag1",
-                    type="bool",
-                ),
-                Field(
-                    name="Keys1",
                     type="ref|list|ref|out",
                 ),
                 Field(
@@ -21201,7 +21283,7 @@ specification = Specification(
                     type="int",
                 ),
                 Field(
-                    name="Unknown3",
+                    name="HASH32",
                     type="int",
                 ),
             ),
@@ -21495,86 +21577,76 @@ specification = Specification(
                     type="int",
                 ),
                 Field(
-                    name="Stat1Value",
+                    name="BossLifePercentIncrease",
                     type="int",
                 ),
                 Field(
-                    name="Stat2Value",
+                    name="BossDamagePercentIncrease",
                     type="int",
                 ),
                 Field(
-                    name="StatsKey1",
+                    name="Stat1",
                     type="ref|out",
                     key="Stats.dat",
                 ),
                 Field(
-                    name="StatsKey2",
+                    name="Stat2",
                     type="ref|out",
                     key="Stats.dat",
                 ),
                 Field(
-                    name="StatsKey3",
+                    name="Stat3",
                     type="ref|out",
                     key="Stats.dat",
                 ),
                 Field(
-                    name="Stat3Value",
+                    name="BossIncItemQuantity",
                     type="int",
                 ),
                 Field(
-                    name="StatsKey4",
+                    name="Stat4",
                     type="ref|out",
                     key="Stats.dat",
                 ),
                 Field(
-                    name="Stat4Value",
+                    name="BossIncItemRarity",
                     type="int",
                 ),
                 Field(
-                    name="StatsKey5",
+                    name="Stat5",
                     type="ref|out",
                     key="Stats.dat",
                 ),
                 Field(
-                    name="Stat5Value",
+                    name="BossAilmentPercentDecrease",
                     type="int",
                 ),
             ),
             virtual_fields=(
                 VirtualField(
-                    name="Stat1",
-                    fields=(
-                        "StatsKey1",
-                        "Stat1Value",
-                    ),
+                    name="StatsKey1",
+                    fields=("Stat1",),
+                    alias=True,
                 ),
                 VirtualField(
-                    name="Stat2",
-                    fields=(
-                        "StatsKey2",
-                        "Stat2Value",
-                    ),
+                    name="StatsKey2",
+                    fields=("Stat2",),
+                    alias=True,
                 ),
                 VirtualField(
-                    name="Stat3",
-                    fields=(
-                        "StatsKey3",
-                        "Stat3Value",
-                    ),
+                    name="StatsKey3",
+                    fields=("Stat3",),
+                    alias=True,
                 ),
                 VirtualField(
-                    name="Stat4",
-                    fields=(
-                        "StatsKey4",
-                        "Stat4Value",
-                    ),
+                    name="StatsKey4",
+                    fields=("Stat4",),
+                    alias=True,
                 ),
                 VirtualField(
-                    name="Stat5",
-                    fields=(
-                        "StatsKey5",
-                        "Stat5Value",
-                    ),
+                    name="StatsKey5",
+                    fields=("Stat5",),
+                    alias=True,
                 ),
                 VirtualField(
                     name="Stats",
@@ -21595,25 +21667,25 @@ specification = Specification(
                     type="int",
                 ),
                 Field(
-                    name="Stat1Value",
+                    name="LifePercentIncrease",
                     type="int",
                 ),
                 Field(
-                    name="Stat2Value",
+                    name="DamagePercentIncrease",
                     type="int",
                 ),
                 Field(
-                    name="StatsKey1",
+                    name="Stat1",
                     type="ref|out",
                     key="Stats.dat",
                 ),
                 Field(
-                    name="StatsKey2",
+                    name="Stat2",
                     type="ref|out",
                     key="Stats.dat",
                 ),
                 Field(
-                    name="StatsKey3",
+                    name="Stat3",
                     type="ref|out",
                     key="Stats.dat",
                 ),
@@ -21622,7 +21694,7 @@ specification = Specification(
                     type="int",
                 ),
                 Field(
-                    name="StatsKey4",
+                    name="Stat4",
                     type="ref|out",
                     key="Stats.dat",
                 ),
@@ -21633,32 +21705,24 @@ specification = Specification(
             ),
             virtual_fields=(
                 VirtualField(
-                    name="Stat1",
-                    fields=(
-                        "StatsKey1",
-                        "Stat1Value",
-                    ),
+                    name="StatsKey1",
+                    fields=("Stat1",),
+                    alias=True,
                 ),
                 VirtualField(
-                    name="Stat2",
-                    fields=(
-                        "StatsKey2",
-                        "Stat2Value",
-                    ),
+                    name="StatsKey2",
+                    fields=("Stat2",),
+                    alias=True,
                 ),
                 VirtualField(
-                    name="Stat3",
-                    fields=(
-                        "StatsKey3",
-                        "Stat3Value",
-                    ),
+                    name="StatsKey3",
+                    fields=("Stat3",),
+                    alias=True,
                 ),
                 VirtualField(
-                    name="Stat4",
-                    fields=(
-                        "StatsKey4",
-                        "Stat4Value",
-                    ),
+                    name="StatsKey4",
+                    fields=("Stat4",),
+                    alias=True,
                 ),
                 VirtualField(
                     name="Stats",
@@ -21808,11 +21872,11 @@ specification = Specification(
                     key="MonsterPacks.dat",
                 ),
                 Field(
-                    name="Flag0",
+                    name="Flag",
                     type="bool",
                 ),
                 Field(
-                    name="Unknown0",
+                    name="Weight",
                     type="int",
                 ),
                 Field(
@@ -21821,9 +21885,8 @@ specification = Specification(
                     key="MonsterVarieties.dat",
                 ),
                 Field(
-                    name="Unknown1",
-                    type="ref|generic",
-                    key="MonsterPackEntries.dat",
+                    name="Unknown0",
+                    type="ref|string",
                 ),
             ),
         ),
@@ -22895,7 +22958,7 @@ specification = Specification(
                     key="AchievementItems.dat",
                 ),
                 Field(
-                    name="Unknown1",
+                    name="Threshold",
                     type="int",
                 ),
                 Field(
@@ -22907,7 +22970,7 @@ specification = Specification(
                     type="bool",
                 ),
                 Field(
-                    name="Unknown2",
+                    name="Unknown1",
                     type="int",
                 ),
             ),
@@ -24635,6 +24698,7 @@ specification = Specification(
                 Field(
                     name="Id",
                     type="ref|string",
+                    unique=True,
                 ),
                 Field(
                     name="MasteryEffects",
@@ -27763,7 +27827,7 @@ specification = Specification(
                     type="int",
                 ),
                 Field(
-                    name="Unknown3",
+                    name="Duration",
                     type="int",
                 ),
                 Field(
@@ -30680,6 +30744,13 @@ specification = Specification(
                     key="Mods.dat",
                 ),
             ),
+            virtual_fields=(
+                VirtualField(
+                    name="PreviousTiers",
+                    fields=("PreviousTier",),
+                    alias=True,
+                ),
+            ),
         ),
         "UltimatumTrialMasterAudio.dat": File(
             fields=(
@@ -32226,5 +32297,5 @@ specification = Specification(
                 ),
             ),
         ),
-    }
+    },
 )

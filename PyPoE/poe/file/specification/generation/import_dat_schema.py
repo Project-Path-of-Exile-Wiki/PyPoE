@@ -83,7 +83,10 @@ def _read_dat_schema_local(path) -> str:
 
 def _load_dat_schema_tables(schema_json: str, sequel: int):
     data = json.loads(schema_json, object_hook=lambda d: SimpleNamespace(**d))
-    return sorted(filter(lambda v: v.validFor & sequel, data.tables), key=lambda table: table.name)
+    return sorted(
+        filter(lambda v: v.columns and v.validFor & sequel, data.tables),
+        key=lambda table: table.name,
+    )
 
 
 def _convert_tables(
@@ -97,7 +100,7 @@ def _convert_tables(
             if line == "        # <specification>\n":
                 spec += "".join(converted_tables)
             else:
-                spec += line.replace("# <version>", f"{sequel},")
+                spec += line.replace("0,  # <version>", f"{sequel},")
     return spec
 
 
@@ -125,6 +128,15 @@ def _convert_columns(table_name: str, columns: list) -> str:
 
 def _convert_column(table_name: str, column, name_generator: UnknownColumnNameGenerator) -> str:
     column_name = column.name if column.name else name_generator.next_name(column)
+
+    if column.interval:
+        copy = SimpleNamespace(**column.__dict__)
+        copy.name = column_name.removesuffix("Value") + "Min"
+        copy.interval = False
+        spec = _convert_column(table_name, copy, name_generator)
+        copy.name = column_name.removesuffix("Value") + "Max"
+        return spec + _convert_column(table_name, copy, name_generator)
+
     column_type = _convert_column_type(column)
     if table_name in custom_attributes and column_name in custom_attributes[table_name]:
         custom_attribute = custom_attributes[table_name][column_name]
@@ -162,6 +174,7 @@ def _convert_column_type(column) -> str:
         return "ref|list|" + _TYPE_MAP[column.type]
     else:
         return _TYPE_MAP[column.type]
+
 
 _TYPE_MAP = {
     "bool": "bool",

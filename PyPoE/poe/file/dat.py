@@ -1091,9 +1091,16 @@ class RelationalReader(AbstractFileCache[DatFile]):
         """
         if item.startswith("Data/"):
             item = item[len("Data/") :]
-        item = "Data/" + self._language + item.replace(".dat64", ".datc64")
+        item = item.replace(".dat64", ".datc64")
 
-        return self.get_file(item).reader
+        if self._language:
+            try:
+                return self.get_file("Data/" + self._language + item).reader
+            except (KeyError, FileNotFoundError):
+                # Not all dat files have/need translations
+                pass
+
+        return self.get_file("Data/" + item).reader
 
     def _set_value(self, obj, other, key, offset):
         if obj is None:
@@ -1150,7 +1157,7 @@ class RelationalReader(AbstractFileCache[DatFile]):
 
     def _get_file_instance_args(self, file_name, *args, **kwargs):
         opts = super()._get_file_instance_args(file_name)
-        opts["file_name"] = file_name.replace("Data/" + self._language, "")
+        opts["file_name"] = file_name.split("/")[-1]
         return opts
 
     def get_file(self, file_name):

@@ -166,7 +166,6 @@ class AreaParser(parser.BaseParser):
     _files = [
         "WorldAreas.datc64",
         "MapPins.datc64",
-        "AtlasNode.datc64",
     ]
 
     _area_column_index_filter = partialmethod(

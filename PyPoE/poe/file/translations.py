@@ -153,8 +153,9 @@ HARDCODED_TRANSLATION_FILE = os.path.join(DATA_DIR, "hardcoded_descriptions.txt"
 
 regex_translation_string = re.compile(
     r"^"
-    r"[\s]*"
+    r"\s*"
     r"(?P<minmax>(?:[0-9\-\|#!]+[ \t]+)+)"
+    r"(?P<restriction>(?:\w+[ \t]+)*)"
     r'"(?P<description>[^"]*)"'
     r"(?P<quantifier>(?:[ \t]*[\w%]+)*)"
     r"[ \t]*[\r\n]*"
@@ -182,6 +183,7 @@ _hardcoded_translation_file = None
 StatValue = TypeVar("StatValue", int, Tuple)
 """Numeric value to interpolate into a stat string. If a tuple is supplied,
  a range will be displayed instead"""
+
 
 # =============================================================================
 # Warnings
@@ -243,11 +245,12 @@ class Translation(TranslationReprMixin):
 
     _REPR_EXTRA_ATTRIBUTES = OrderedDict((("ids", None),))
 
-    def __init__(self, identifier: Union[str, None] = None, tf_index: Union[int, None] = None):
+    def __init__(self, identifier: Union[str, None], tf_index: int, parent: "TranslationFile"):
         self.languages: List[TranslationLanguage] = []
         self.ids: List[str] = []
         self.identifier: Union[str, None] = identifier
         self.tf_index: Union[int, None] = tf_index
+        self.parent = parent
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Translation):
@@ -399,12 +402,15 @@ class TranslationLanguage(TranslationReprMixin):
             # if len(values) != len(ts.range):
             #   raise Exception('mismatch %s' % ts.range)
 
+            if ts.restrictions:
+                # only known restriction is 'table_only' which is not currently needed
+                continue
+
             match = ts.match_range(test_values)
             temp.append((match, ts))
 
         # Only the highest scoring/matching translation...
-        temp.sort(key=lambda x: -x[0])
-        rating, ts = temp[0]
+        rating, ts = max(temp, key=lambda x: x[0], default=(0, None))
 
         if rating <= 0:
             return None, None, None
@@ -521,6 +527,7 @@ class TranslationString(TranslationReprMixin):
         self.tags: List[int] = []
         self.tags_types: List[str] = []
         self.strings: List[str] = []
+        self.restrictions: List[str] = []
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, TranslationString):
@@ -1271,6 +1278,7 @@ class TQRelationalData(TranslationQuantifier):
         predicate: tuple[str, Any] = None,
         placeholder: str = None,
         convert_type: str = None,
+        format_value: Callable = None,
     ):
         self.table = relational_reader[table]
         if index_column and index_column not in self.table.index:
@@ -1280,7 +1288,10 @@ class TQRelationalData(TranslationQuantifier):
         self.predicate = predicate
         self.placeholder = placeholder
         self.convert_type = convert_type
-        super().__init__(id=id, handler=self.handle, reverse_handler=self.reverse)
+        self.format_value = format_value or str
+        super().__init__(
+            id=id, handler=self.handle, reverse_handler=None if format_value else self.reverse
+        )
 
     def range_format(self, v: tuple, _):
         return v[0] if v[0] == v[1] else self.placeholder
@@ -1292,9 +1303,11 @@ class TQRelationalData(TranslationQuantifier):
 
             if self.index_column:
                 result = self.table.index[self.index_column][v]
-                return self.get_value(result, self.value_column)
+                value = self.get_value(result, self.value_column)
             else:
-                return self.table[v][self.value_column]
+                value = self.table[v][self.value_column]
+
+            return self.format_value(value)
         except KeyError:
             return self.placeholder
 
@@ -1486,7 +1499,8 @@ class TranslationFile(AbstractFileReadOnly):
     __slots__ = ["translations", "translations_hash", "_base_dir", "_parent"]
 
     _VIRTUAL_STAT_LOOKUP = {
-        "corrosive_shroud_maximum_stored_poison_damage": "virtual_plague_bearer_maximum_stored_poison_damage"  # noqa
+        "corrosive_shroud_maximum_stored_poison_damage": "virtual_plague_bearer_maximum_stored_poison_damage"
+        # noqa
     }
 
     _CLIENT_STRINGS_LOOKUP = {
@@ -1571,7 +1585,7 @@ class TranslationFile(AbstractFileReadOnly):
             offset_max = match_next.start() if match_next else len(data)
             if match.group("description"):
                 translation = Translation(
-                    identifier=match.group("identifier"), tf_index=translation_index
+                    identifier=match.group("identifier"), tf_index=translation_index, parent=self
                 )
 
                 # Parse the IDs for the translations
@@ -1620,18 +1634,24 @@ class TranslationFile(AbstractFileReadOnly):
                     for i in range(0, int(tcount.group())):
                         ts_match = regex_translation_string.search(data, offset, offset_next_lang)
                         if not ts_match:
+                            context = 20
+                            line_number = data.count("\n", 0, offset)
+                            before = data[max(offset - context, 0) : offset]
+                            match = data[offset : offset_next_lang + 1]
+                            after = data[
+                                offset_next_lang + 1 : min(offset_next_lang + context, offset_max)
+                            ]
                             raise ParserError(
-                                "Malformed translation string near line %s @ ids %s: %s"
-                                % (
-                                    data.count("\n", 0, offset),
-                                    translation.ids,
-                                    data[offset : offset_next_lang + 1],
-                                )
+                                f"Malformed translation string near line {line_number}"
+                                f" @ ids {translation.ids}: ‘...{before}[{match}]{after}...’"
                             )
 
                         offset = ts_match.end()
 
                         ts = TranslationString(parent=tl)
+
+                        if ts_match.group("restriction"):
+                            ts.restrictions = ts_match.group("restriction").strip().split()
 
                         # Min/Max limiter
                         limiter = ts_match.group("minmax").strip().split()
@@ -1650,9 +1670,9 @@ class TranslationFile(AbstractFileReadOnly):
                                 TranslationRange(value, value, parent=ts, negated=negated)
                             elif "|" in matchstr:
                                 minmax = matchstr.split("|")
-                                min = int(minmax[0]) if minmax[0] != "#" else None
-                                max = int(minmax[1]) if minmax[1] != "#" else None
-                                TranslationRange(min, max, parent=ts, negated=negated)
+                                min_val = int(minmax[0]) if minmax[0] != "#" else None
+                                max_val = int(minmax[1]) if minmax[1] != "#" else None
+                                TranslationRange(min_val, max_val, parent=ts, negated=negated)
                             else:
                                 TranslationRange(None, None, parent=ts, negated=negated)
                                 warnings.warn(
@@ -1684,7 +1704,10 @@ class TranslationFile(AbstractFileReadOnly):
                 pass
             elif match.group("include"):
                 if self._parent:
-                    other_tf = self._parent.get_file(match.group("include"))
+                    # Not sure if \ instead of / in include file path is valid - only seen in unused files
+                    # Normalizing all path separators to / seems safe though
+                    include_file = match.group("include").replace("\\", "/")
+                    other_tf = self._parent.get_file(include_file)
                     self.merge(other_tf)
                     translation_index += len(other_tf.translations)
                 elif self._base_dir:
@@ -1801,8 +1824,7 @@ class TranslationFile(AbstractFileReadOnly):
         full_result: Literal[True],
         lang: str | None = "English",
         use_placeholder: Union[bool, Callable, None] = False,
-    ) -> TranslationResult:
-        ...
+    ) -> TranslationResult: ...
 
     @overload
     def get_translation(
@@ -1812,8 +1834,7 @@ class TranslationFile(AbstractFileReadOnly):
         only_values: Literal[True],
         lang: str | None = "English",
         use_placeholder: Union[bool, Callable, None] = False,
-    ) -> Dict[str, Tuple[str, str]]:
-        ...
+    ) -> Dict[str, Tuple[str, str]]: ...
 
     @overload
     def get_translation(
@@ -1822,8 +1843,7 @@ class TranslationFile(AbstractFileReadOnly):
         values: Union[Dict, List],
         lang: str | None = "English",
         use_placeholder: Union[bool, Callable, None] = False,
-    ) -> List[str]:
-        ...
+    ) -> List[str]: ...
 
     def get_translation(
         self,
@@ -2055,7 +2075,11 @@ class TranslationFileCache(AbstractFileCache[TranslationFile]):
 
     @doc(prepend=AbstractFileCache.__init__)
     def __init__(
-        self, *args, merge_with_custom_file: Union[None, bool, TranslationFile] = None, **kwargs
+        self,
+        *args,
+        merge_with_custom_file: Union[None, bool, TranslationFile] = None,
+        sequel=1,
+        **kwargs,
     ):
         """
         Parameters
@@ -2066,6 +2090,7 @@ class TranslationFileCache(AbstractFileCache[TranslationFile]):
             translation file located in PyPoE's data directory. Alternatively a
             TranslationFile instance can be passed which then will be used.
         """
+        self.sequel = sequel
         if merge_with_custom_file is None or merge_with_custom_file is False:
             self._custom_file = None
         elif merge_with_custom_file is True:
@@ -2111,7 +2136,7 @@ class TranslationFileCache(AbstractFileCache[TranslationFile]):
             "parent": self,
         }
 
-    def get_file(self, file_name: str) -> TranslationFile:
+    def get_file(self, file_name: str, *args, **kwargs) -> TranslationFile:
         """
         Returns the specified file from the cache (and loads it if not in the
         cache already).
@@ -2125,6 +2150,7 @@ class TranslationFileCache(AbstractFileCache[TranslationFile]):
 
         Parameters
         ----------
+        **kwargs
         file_name :  str
             file name/path relative to the root path of exile directory
 
@@ -2134,6 +2160,10 @@ class TranslationFileCache(AbstractFileCache[TranslationFile]):
         TranslationFile
             the specified TranslationFile
         """
+
+        if self.sequel == 2:
+            file_name = file_name.replace(".txt", ".csd")
+
         if file_name not in self.files:
             tf = self._create_instance(file_name=file_name)
 
@@ -2322,6 +2352,25 @@ def install_data_dependant_quantifiers(relational_reader: RelationalReader):
             placeholder="<Random Skill>",
         )
 
+    if relational_reader.specification.sequel == 2:
+        TQRelationalData(
+            id="ultimatum_wager_type_hash",
+            relational_reader=relational_reader,
+            table="UltimatumWagerTypes.dat64",
+            index_column="HASH16",
+            value_column="DisplayText",
+        )
+
+    if relational_reader.specification.sequel == 2:
+        TQRelationalData(
+            id="specific_skill",
+            relational_reader=relational_reader,
+            table="SkillGemsForUniqueStat.dat64",
+            index_column="Index",
+            value_column="SkillGems",
+            format_value=lambda r: " and ".join(skill["BaseItemType"]["Name"] for skill in r),
+        )
+
     TQRelationalData(
         id="passive_hash",
         relational_reader=relational_reader,
@@ -2416,7 +2465,6 @@ TQNumberFormat(
     dp=2,
 )
 
-
 TQNumberFormat(
     id="divide_by_two_0dp",
     divisor=2,
@@ -2440,7 +2488,6 @@ TQNumberFormat(
     dp=1,
     fixed=True,
 )
-
 
 TQNumberFormat(
     id="divide_by_twelve",
@@ -2605,6 +2652,11 @@ TQNumberFormat(
 )
 
 TQNumberFormat(
+    id="multiply_by_one_hundred",
+    multiplier=100,
+)
+
+TQNumberFormat(
     id="divide_by_one_thousand",
     divisor=1000,
 )
@@ -2677,6 +2729,14 @@ TranslationQuantifier(
 
 TranslationQuantifier(
     id="metamorphosis_reward_description",
+)
+
+TranslationQuantifier(
+    id="ultimatum_wager_type_hash",
+)
+
+TranslationQuantifier(
+    id="specific_skill",
 )
 
 TranslationQuantifier(

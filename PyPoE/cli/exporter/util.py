@@ -24,6 +24,7 @@ Agreement
 
 See PyPoE/LICENSE
 """
+
 import json
 
 # Python

@@ -84,6 +84,7 @@ _translation_map = {
     MOD_DOMAIN.SENTINEL: "sentinel_stat_descriptions.txt",
     MOD_DOMAIN.TEMPLAR_RELIC: "sanctum_relic_stat_descriptions.txt",
     MOD_DOMAIN.TINCTURE: "tincture_stat_descriptions.txt",
+    MOD_DOMAIN.MAP_RELIC: "atlas_relic_stat_descriptions.txt",
 }
 
 # =============================================================================

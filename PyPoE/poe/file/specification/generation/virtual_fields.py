@@ -81,27 +81,27 @@ virtual_fields_mappings = {
             "Mods": [
                 Zip("SpawnWeight", ("SpawnWeight_TagsKeys", "SpawnWeight_Values")),
                 VirtualField(
-                    name="Stat1",
+                    name="Stat1Zip",
                     fields=("StatsKey1", "Stat1Min", "Stat1Max"),
                 ),
                 VirtualField(
-                    name="Stat2",
+                    name="Stat2Zip",
                     fields=("StatsKey2", "Stat2Min", "Stat2Max"),
                 ),
                 VirtualField(
-                    name="Stat3",
+                    name="Stat3Zip",
                     fields=("StatsKey3", "Stat3Min", "Stat3Max"),
                 ),
                 VirtualField(
-                    name="Stat4",
+                    name="Stat4Zip",
                     fields=("StatsKey4", "Stat4Min", "Stat4Max"),
                 ),
                 VirtualField(
-                    name="Stat5",
+                    name="Stat5Zip",
                     fields=("StatsKey5", "Stat5Min", "Stat5Max"),
                 ),
                 VirtualField(
-                    name="Stat6",
+                    name="Stat6Zip",
                     fields=("StatsKey6", "Stat6Min", "Stat6Max"),
                 ),
                 VirtualField(
@@ -117,57 +117,9 @@ virtual_fields_mappings = {
                 ),
                 VirtualField(
                     name="Stats",
-                    fields=("Stat1", "Stat2", "Stat3", "Stat4", "Stat5", "Stat6"),
+                    fields=("Stat1Zip", "Stat2Zip", "Stat3Zip", "Stat4Zip", "Stat5Zip", "Stat6Zip"),
                 ),
                 Zip("GenerationWeight", ("GenerationWeight_TagsKeys", "GenerationWeight_Values")),
-            ],
-            "MonsterMapBossDifficulty": [
-                VirtualField(
-                    name="Stat1",
-                    fields=("StatsKey1", "Stat1Value"),
-                ),
-                VirtualField(
-                    name="Stat2",
-                    fields=("StatsKey2", "Stat2Value"),
-                ),
-                VirtualField(
-                    name="Stat3",
-                    fields=("StatsKey3", "Stat3Value"),
-                ),
-                VirtualField(
-                    name="Stat4",
-                    fields=("StatsKey4", "Stat4Value"),
-                ),
-                VirtualField(
-                    name="Stat5",
-                    fields=("StatsKey5", "Stat5Value"),
-                ),
-                VirtualField(
-                    name="Stats",
-                    fields=("Stat1", "Stat2", "Stat3", "Stat4", "Stat5"),
-                ),
-            ],
-            "MonsterMapDifficulty": [
-                VirtualField(
-                    name="Stat1",
-                    fields=("StatsKey1", "Stat1Value"),
-                ),
-                VirtualField(
-                    name="Stat2",
-                    fields=("StatsKey2", "Stat2Value"),
-                ),
-                VirtualField(
-                    name="Stat3",
-                    fields=("StatsKey3", "Stat3Value"),
-                ),
-                VirtualField(
-                    name="Stat4",
-                    fields=("StatsKey4", "Stat4Value"),
-                ),
-                VirtualField(
-                    name="Stats",
-                    fields=("Stat1", "Stat2", "Stat3", "Stat4"),
-                ),
             ],
             "PantheonSouls": [
                 Alias("BaseItemTypesKey", "CapturedVessel"),

@@ -1644,14 +1644,14 @@ class MonsterParser(GenericLuaParser):
                 ),
                 # stat1Key -> map_hidden_monster_life_+%_final
                 (
-                    "Stat1Value",
+                    "LifePercentIncrease",
                     {
                         "key": "life",
                     },
                 ),
                 # stat2key -> map_hidden_monster_damage_+%_final
                 (
-                    "Stat2Value",
+                    "DamagePercentIncrease",
                     {
                         "key": "damage",
                     },
@@ -1660,28 +1660,28 @@ class MonsterParser(GenericLuaParser):
             "MonsterMapBossDifficulty.dat64": (
                 # stat1Key -> map_hidden_monster_life_+%_final
                 (
-                    "Stat1Value",
+                    "BossLifePercentIncrease",
                     {
                         "key": "boss_life",
                     },
                 ),
                 # stat2key -> map_hidden_monster_damage_+%_final
                 (
-                    "Stat2Value",
+                    "BossDamagePercentIncrease",
                     {
                         "key": "boss_damage",
                     },
                 ),
                 # stat1Key -> monster_dropped_item_quantity_+%
                 (
-                    "Stat3Value",
+                    "BossIncItemQuantity",
                     {
                         "key": "boss_item_quantity",
                     },
                 ),
                 # stat2key -> monster_dropped_item_rarity_+%
                 (
-                    "Stat4Value",
+                    "BossIncItemRarity",
                     {
                         "key": "boss_item_rarity",
                     },

@@ -1434,10 +1434,11 @@ class BaseParser:
             language=config.get_option("language"),
         )
         install_data_dependant_quantifiers(self.rr)
-        self.tc = TranslationFileCache(path_or_file_system=self.file_system, **self._TC_KWARGS)
-        if self.specification.sequel == 1:
-            for file_name in self._translations:
-                self.tc[file_name]
+        self.tc = TranslationFileCache(
+            path_or_file_system=self.file_system, sequel=2, **self._TC_KWARGS
+        )
+        for file_name in self._translations:
+            self.tc[file_name]
 
         self.ot = OTFileCache(
             path_or_file_system=self.file_system,
