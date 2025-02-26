@@ -1619,6 +1619,7 @@ class TranslationFile(AbstractFileReadOnly):
                 t = True
                 language = "English"
                 while t:
+                    all_strings_restricted = False
                     tl = TranslationLanguage(language, parent=translation)
                     tcount = regex_int.search(data, offset, offset_max)
                     offset = tcount.end()
@@ -1692,11 +1693,17 @@ class TranslationFile(AbstractFileReadOnly):
                             ts_match.group("quantifier"),
                         )
 
+                    if not [s for s in tl.strings if not s.restrictions]:
+                        all_strings_restricted = True
                     offset = offset_next_lang
 
-                self.translations.append(translation)
-                for translation_id in translation.ids:
-                    self._add_translation_hashed(translation_id, translation)
+                # since translation strings with restrictions are skipped when resolving translations,
+                # don't track the root translation at all in order to allow a subsequent unrestricted
+                # translation to be matched
+                if not all_strings_restricted:
+                    self.translations.append(translation)
+                    for translation_id in translation.ids:
+                        self._add_translation_hashed(translation_id, translation)
                 translation_index += 1
 
             elif match.group("no_description"):
