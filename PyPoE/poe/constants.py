@@ -85,6 +85,7 @@ __all__ = [
     "MOD_STATS_RANGE",
     "MOD_SELL_PRICES",
     "PASSIVE_TYPES",
+    "GAME_MODES",
 ]
 
 MOD_MAX_STATS = 6
@@ -977,6 +978,11 @@ class ITEM_CLASS_FLAGS(IntEnumOverride):
     ARMOUR = 5
     ACCESSORY = 6
     CURRENCY = 7
+
+class GAME_MODES(IntEnumOverride):
+    ALL = 0
+    NORMAL = 1
+    RUTHLESS = 2
 
 
 # =============================================================================

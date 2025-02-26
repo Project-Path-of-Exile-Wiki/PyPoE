@@ -9,6 +9,11 @@ custom_attributes = {
             enum="MOD_DOMAIN",
         ),
     },
+    "BestiaryRecipes.dat": {
+        "GameMode": CustomizedField(
+            enum="GAME_MODES",
+        ),
+    },
     "BestiaryRecipeComponent.dat": {
         "RarityKey": CustomizedField(
             enum="RARITY",
@@ -40,6 +45,9 @@ custom_attributes = {
         ),
         "GenerationType": CustomizedField(
             enum="MOD_GENERATION_TYPE",
+        ),
+        "GameMode": CustomizedField(
+            enum="GAME_MODES",
         ),
     },
     "Scarabs.dat": {

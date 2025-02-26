@@ -52,6 +52,7 @@ from PyPoE.poe.constants import (
     MOD_GENERATION_TYPE,
     MOD_SELL_PRICES,
     MOD_STATS_RANGE,
+    GAME_MODES,
 )
 from PyPoE.shared.decorators import deprecated
 
@@ -96,7 +97,7 @@ class ModsHandler(ExporterHandler):
         parser.add_argument(
             "--domain",
             dest="domain",
-            help="Mod domain",
+            help="Filter by mod domain",
             choices=[k.name for k in MOD_DOMAIN],
         )
 
@@ -104,8 +105,15 @@ class ModsHandler(ExporterHandler):
             "--generation-type",
             "--type",
             dest="generation_type",
-            help="Mod domain",
+            help="Filter by mod generation type",
             choices=[k.name for k in MOD_GENERATION_TYPE],
+        )
+
+        parser.add_argument(
+            "--game-mode",
+            dest="game_mode",
+            help="Filter by game mode",
+            choices=[k.name for k in GAME_MODES],
         )
 
         self.add_default_parsers(
@@ -186,6 +194,7 @@ class ModParser(BaseParser):
                 {
                     "column": "Domain",
                     "comp": getattr(MOD_DOMAIN, args.domain),
+                    "func": lambda m, c: m == c,
                 }
             )
 
@@ -194,12 +203,22 @@ class ModParser(BaseParser):
                 {
                     "column": "GenerationType",
                     "comp": getattr(MOD_GENERATION_TYPE, args.generation_type),
+                    "func": lambda m, c: m == c,
+                }
+            )
+
+        if args.game_mode:
+            filters.append(
+                {
+                    "column": "GameMode",
+                    "comp": getattr(GAME_MODES, args.game_mode),
+                    "func": lambda m, c: c == 0 or m in (c, 0),
                 }
             )
 
         for mod in self.rr["Mods.dat64"]:
             for filter in filters:
-                if mod[filter["column"]] != filter["comp"]:
+                if not filter["func"](mod[filter["column"]], filter["comp"]):
                     break
             else:
                 mods.append(mod)
@@ -223,7 +242,6 @@ class ModParser(BaseParser):
 
             for k in (
                 ("Id", "id"),
-                ("Families", "mod_groups"),
                 ("Domain", "domain"),
                 ("GenerationType", "generation_type"),
                 ("Level", "required_level"),
@@ -247,9 +265,8 @@ class ModParser(BaseParser):
                 data["granted_buff_value"] = mod["BuffTemplate"]["AuraRadius"]
             # todo ID for GEPL
 
-            # 3.19 Update - Lake of Kalandra
+            # 3.19: Families now stores a list
             # Parse Families to mod groups
-
             if mod["Families"]:
                 data["mod_groups"] = ", ".join([m["Id"] for m in mod["Families"]])
 
@@ -258,6 +275,10 @@ class ModParser(BaseParser):
                     [k["GrantedEffect"]["Id"] for k in mod["GrantedEffectsPerLevelKeys"]]
                 )
             data["mod_type"] = mod["ModTypeKey"]["Name"]
+
+            # Game mode - 0: All, 1: Normal, 2: Ruthless
+            if mod["GameMode"] is not None:
+                data["game_mode"] = mod["GameMode"]
 
             stats = []
             values = []
