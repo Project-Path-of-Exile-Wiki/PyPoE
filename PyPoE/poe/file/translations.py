@@ -1697,7 +1697,7 @@ class TranslationFile(AbstractFileReadOnly):
                         all_strings_restricted = True
                     offset = offset_next_lang
 
-				# since translation strings with restrictions are skipped when resolving translations,
+                # since translation strings with restrictions are skipped when resolving translations,
                 # don't track the root translation at all in order to allow a subsequent unrestricted
                 # translation to be matched
                 if not all_strings_restricted:
