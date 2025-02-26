@@ -4001,7 +4001,8 @@ specification = Specification(
                 Field(
                     name="GameMode",
                     type="int",
-                    description="1: Normal, 2: Ruthless",
+                    enum="GAME_MODES",
+                    description="0: All, 1: Normal, 2: Ruthless",
                 ),
                 Field(
                     name="FlaskMod",
@@ -18650,6 +18651,26 @@ specification = Specification(
                 ),
             ),
         ),
+        "MapRelicInventoryLayout.dat": File(
+            fields=(
+                Field(
+                    name="XOffset",
+                    type="int",
+                ),
+                Field(
+                    name="YOffset",
+                    type="int",
+                ),
+                Field(
+                    name="UnlockQuest",
+                    type="int",
+                ),
+                Field(
+                    name="UnlockText",
+                    type="ref|string",
+                ),
+            ),
+        ),
         "MapSeries.dat": File(
             fields=(
                 Field(
@@ -20989,8 +21010,10 @@ specification = Specification(
                     type="ref|list|ref|out",
                 ),
                 Field(
-                    name="Unknown17",
+                    name="GameMode",
                     type="int",
+                    enum="GAME_MODES",
+                    description="0: All, 1: Normal, 2: Ruthless",
                 ),
                 Field(
                     name="Keys2",
@@ -30855,6 +30878,20 @@ specification = Specification(
                     name="JewelName",
                     type="ref|out",
                     key="Words.dat",
+                ),
+                Field(
+                    name="Limit",
+                    type="int",
+                ),
+            ),
+        ),
+        "UniqueMapRelicLimits.dat": File(
+            fields=(
+                Field(
+                    name="Idol",
+                    type="ref|out",
+                    key="Words.dat",
+                    unique=True,
                 ),
                 Field(
                     name="Limit",
