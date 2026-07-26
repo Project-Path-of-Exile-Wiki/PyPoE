@@ -100,6 +100,9 @@ __all__ = [
     "format_result_rows",
     "make_inter_wiki_links",
     "parse_and_handle_description_tags",
+    "strip_keywords",
+    "process_keywords",
+    "apply_simple_column_map",
 ]
 
 DEFAULT_INDENT = 32
@@ -873,7 +876,7 @@ _inter_wiki_map = {
         #
         ("Crucible Passive Skill Tree", {"link": "Crucible Passive Skill Tree"}),
         ("Crucible Passive Skill(?:|s)", {"link": "Crucible Passive Skill"}),
-        ("Passive Skill Tree", {"link": "Passive Skill Tree"}),
+        ("Passive (?:Skill )?Tree", {"link": "Passive Skill Tree"}),
         ("Passive Skill(?:|s)|Passives", {"link": "Passive Skill"}),
         ("Jewel Socket(?:|s)", {"link": "Jewel Socket"}),
         # Ordinary keystones
@@ -2403,7 +2406,9 @@ class BaseParser:
                         temp_trans.insert(
                             index,
                             make_inter_wiki_links(
-                                tr.get_language(self.lang).format_string(result.values[i])[0]
+                                process_keywords(
+                                    tr.get_language(self.lang).format_string(result.values[i])[0]
+                                )
                             ),
                         )
                     else:
@@ -2421,9 +2426,7 @@ class BaseParser:
                         [format.format(line) for line in result_lines] if result_lines else [format]
                     )
 
-                for line in result_lines:
-                    if line:
-                        out.append(make_inter_wiki_links(line))
+                out = [make_inter_wiki_links(process_keywords(line)) for line in result_lines]
 
             if result.missing_ids:
                 # Then check for a custom result, using missing values from the results
@@ -2736,7 +2739,6 @@ def make_inter_wiki_links(string):
     """
 
     _inter_wiki = _inter_wiki_re.get(config.get_option("language"))
-
     if _inter_wiki is None:
         return string
 
@@ -2905,6 +2907,30 @@ def parse_and_handle_description_tags(rr, text):
         .replace("\n", "<br>")
         .replace("\r", "")
     )
+
+
+def strip_keywords(text: str):
+    def replace(match):
+        content = match.group(1)
+        return content.split("|", 1)[-1] if "|" in content else content
+
+    return re.sub(r"(?<!\[)\[([^\[\]]+?)\]", replace, text)
+
+
+def process_keywords(text: str):
+    def replace(match):
+        content = match.group(1)
+        if "|" in content:
+            key, display = content.split("|", 1)
+        else:
+            key = content
+            display = content
+        if key == display:
+            return f"{{{{keyword|{key}}}}}"
+        return f"{{{{keyword|{key}|{display}}}}}"
+
+    text = text.replace("\r", "").replace("\n", "<br>")
+    return re.sub(r"(?<!\[)\[([^\[\]]+?)\]", replace, text)
 
 
 def apply_simple_column_map(

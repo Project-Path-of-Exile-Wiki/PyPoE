@@ -42,8 +42,8 @@ from functools import partialmethod
 
 from PyPoE.cli.core import Msg, console
 from PyPoE.cli.exporter import config
+from PyPoE.cli.exporter.wiki import parser
 from PyPoE.cli.exporter.wiki.handler import ExporterHandler, ExporterResult
-from PyPoE.cli.exporter.wiki.parser import BaseParser, WikiCondition
 
 # Self
 from PyPoE.poe import poe1constants as constants
@@ -65,9 +65,11 @@ class OutOfBoundsWarning(UserWarning):
     pass
 
 
-class ModWikiCondition(WikiCondition):
+class ModWikiCondition(parser.WikiCondition):
     COPY_KEYS = ("tier_text",)
-    COPY_CONDITIONS = {"tags": WikiCondition.tagsets_equal}
+    COPY_CONDITIONS = {
+        "tags": parser.WikiCondition.tagsets_equal,
+    }
 
     NAME = "Mod"
 
@@ -134,7 +136,7 @@ class ModsHandler(ExporterHandler):
         self.add_format_argument(parser)
 
 
-class ModParser(BaseParser):
+class ModParser(parser.BaseParser):
     # Load files in advance
     _files = [
         "Mods.datc64",
@@ -147,7 +149,7 @@ class ModParser(BaseParser):
     ]
 
     _mod_column_index_filter = partialmethod(
-        BaseParser._column_index_filter,
+        parser.BaseParser._column_index_filter,
         dat_file_name="Mods.dat64",
         error_msg="Several areas have not been found:\n%s",
     )
@@ -301,7 +303,7 @@ class ModParser(BaseParser):
                 )
 
             # Veiled modifiers
-            if mod["Domain"] == 26:
+            if mod["Domain"] == constants.MOD_DOMAIN.VEILED:
                 data["stat_text"] = re.sub(
                     r"<veiled (\w+) (.+)>",
                     lambda match: f"{{{{Veiled|{match.group(1)}|{match.group(2)}}}}}",

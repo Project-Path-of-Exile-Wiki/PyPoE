@@ -38,7 +38,7 @@ from collections import OrderedDict, defaultdict
 from functools import partial
 
 from PyPoE.cli.exporter.wiki.handler import ExporterHandler, ExporterResult
-from PyPoE.cli.exporter.wiki.parser import BaseParser, TagHandler
+from PyPoE.cli.exporter.wiki.parser import BaseParser, TagHandler, strip_keywords
 
 # Self
 from PyPoE.poe.text import parse_description_tags
@@ -391,7 +391,7 @@ class OTStatsParser(GenericLuaParser):
                             ("name", data["fn"]),
                             ("id", stat),
                             ("value", value),
-                            ("stat_text", txt or ""),
+                            ("stat_text", strip_keywords(txt) or ""),
                         )
                     )
                 )

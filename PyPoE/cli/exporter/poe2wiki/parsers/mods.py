@@ -59,7 +59,7 @@ class OutOfBoundsWarning(UserWarning):
     pass
 
 
-class WikiCondition(parser.WikiCondition):
+class ModWikiCondition(parser.WikiCondition):
     COPY_KEYS = ("tier_text",)
     COPY_CONDITIONS = {
         "tags": parser.WikiCondition.tagsets_equal,
@@ -323,7 +323,7 @@ class ModParser(parser.BaseParser):
             # and then sell price back to the vendor is 11% of that
             # mod_prices...
 
-            cond = WikiCondition(
+            cond = ModWikiCondition(
                 data=infobox,
                 cmdargs=parsed_args,
             )

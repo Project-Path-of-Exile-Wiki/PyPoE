@@ -1642,7 +1642,7 @@ class ItemsParser(SkillParserShared):
                 lang=self._language,
             )
             infobox["buff_stat_text"] = parser.process_keywords(
-                "<br>".join([parser.make_inter_wiki_links(line) for line in tr.lines])
+                self._format_lines([parser.make_inter_wiki_links(line) for line in tr.lines])
             )
 
     _type_flask = _type_factory(
@@ -2343,7 +2343,7 @@ class ItemsParser(SkillParserShared):
 
         help_text = ot["Base"].get("description_text")
         if help_text:
-            infobox["help_text"] = infobox["help_text"] = parser.process_keywords(
+            infobox["help_text"] = parser.process_keywords(
                 "<br>".join(
                     self.rr["ClientStrings.dat64"].index["Id"][help_text]["Text"].splitlines()
                 )

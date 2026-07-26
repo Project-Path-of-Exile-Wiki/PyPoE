@@ -1939,7 +1939,9 @@ class ItemsParser(parser.BaseParser):
             infobox["name"] = ge_name
             infobox["base_item_id"] = infobox.pop("metadata_id")
 
-        infobox["gem_tags"] = ", ".join([gt["Tag"] for gt in gem_effect["GemTags"] if gt["Tag"]])
+        infobox["gem_tags"] = parser.strip_keywords(
+            ", ".join([gt["Tag"] for gt in gem_effect["GemTags"] if gt["Tag"]])
+        )
         infobox["gem_style"] = gem_effect["ItemColor"]
 
         # Skill IDs
@@ -2176,7 +2178,7 @@ class ItemsParser(parser.BaseParser):
                 full_result=True,
                 lang=self._language,
             )
-            infobox["buff_stat_text"] = "<br>".join(
+            infobox["buff_stat_text"] = self._format_lines(
                 [parser.make_inter_wiki_links(line) for line in tr.lines]
             )
 
@@ -2291,7 +2293,7 @@ class ItemsParser(parser.BaseParser):
         data_file="CurrencyItems.dat64",
         data_mapping=(
             (
-                "Stacks",
+                "StackSize",
                 {
                     "template": "stack_size",
                     "condition": None,
@@ -2309,7 +2311,7 @@ class ItemsParser(parser.BaseParser):
                 {
                     "template": "help_text",
                     "condition": lambda v: v,
-                    "format": lambda v: " ".join(v.splitlines()),
+                    "format": lambda v: "<br>".join(v.splitlines()),
                 },
             ),
             (
@@ -3430,7 +3432,7 @@ class ItemsParser(parser.BaseParser):
 
         help_text = ot["Base"].get("description_text")
         if help_text:
-            infobox["help_text"] = infobox["help_text"] = "<br>".join(
+            infobox["help_text"] = "<br>".join(
                 self.rr["ClientStrings.dat64"].index["Id"][help_text]["Text"].splitlines()
             )
 

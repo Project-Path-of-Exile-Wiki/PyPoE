@@ -102,6 +102,7 @@ __all__ = [
     "parse_and_handle_description_tags",
     "process_keywords",
     "strip_keywords",
+    "apply_simple_column_map",
 ]
 
 DEFAULT_INDENT = 32
@@ -1501,9 +1502,9 @@ class BaseParser:
             out_img = decode_dds(data)
             if process:
                 out_img = process(out_img)
-            out_img.save(out_path.replace(".dds", parsed_args.convert_images))
-
-            console('Converted "%s" to png' % out_path)
+            if out_img:
+                out_img.save(out_path.replace(".dds", parsed_args.convert_images))
+                console('Converted "%s" to png' % out_path)
         else:
             with open(out_path, "wb") as f:
                 f.write(self.file_system.extract_dds(data))
@@ -1932,7 +1933,6 @@ def make_inter_wiki_links(string):
     """
 
     _inter_wiki = _inter_wiki_re.get(config.get_option("language"))
-
     if _inter_wiki is None:
         return string
 
