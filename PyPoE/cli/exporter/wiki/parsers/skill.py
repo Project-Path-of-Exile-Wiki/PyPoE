@@ -679,7 +679,9 @@ class SkillParserShared(parser.BaseParser):
         # From ActiveSkills.dat64
         if act_skill:
             if act_skill["Description"]:
-                infobox["gem_description"] = parser.process_keywords(act_skill["Description"])
+                infobox["gem_description"] = parser.process_keywords(
+                    act_skill["Description"].replace("\n", "<br>").replace("\r", "")
+                )
             if act_skill["DisplayedName"]:
                 infobox["active_skill_name"] = act_skill["DisplayedName"]
             if act_skill["WeaponRestriction_ItemClassesKeys"]:
@@ -1072,7 +1074,9 @@ class SkillParser(SkillParserShared):
                 else None
             )
             if gem_effect and gem_effect["SupportText"]:
-                data["gem_description"] = parser.process_keywords(gem_effect["SupportText"])
+                data["gem_description"] = parser.process_keywords(
+                    gem_effect["SupportText"].replace("\n", "<br>").replace("\r", "")
+                )
             if skill_gem:
                 levels = self.rr["ItemExperiencePerLevel.dat64"].index["ItemExperienceType"][
                     skill_gem["ExperienceProgression"]

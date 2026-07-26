@@ -2828,6 +2828,9 @@ def get_keywords_rr():
 # NOTE: Any changes here should be reflected in the wiki Module:Keyword
 #       to ensure 100% compatibility.
 def process_keywords(text: str):
+    if "[DNT" in text or "[UNUSED" in text:
+        # Don't treat these tags as keywords
+        return text
     text = text.replace("\r", "").replace("\n", "<br>")
 
     def resolve_link(key, display):

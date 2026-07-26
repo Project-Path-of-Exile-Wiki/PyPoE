@@ -1254,6 +1254,7 @@ _inter_wiki_map = {
         # Currency items
         ("Lifeforce", {"link": "Lifeforce"}),
         ("Remnant(?:|s) of Corruption", {"link": "Remnant of Corruption"}),
+        ("Dead Man's Sulphur", {"link": "Dead Man's Sulphur"}),
         ("Cartographer's Chisel(?:|s)", {"link": "Cartographer's Chisel"}),
         ("Glassblower's Bauble(?:|s)", {"link": "Glassblower's Bauble"}),
         ("Gemcutter's Prism(?:|s)", {"link": "Gemcutter's Prism"}),
@@ -1278,6 +1279,7 @@ _inter_wiki_map = {
         ("Instilling Orb(?:|s)", {"link": "Instilling Orb"}),
         ("Enkindling Orb(?:|s)", {"link": "Enkindling Orb"}),
         ("Orb(?:|s) of Regret", {"link": "Orb of Regret"}),
+        ("Stacked Deck(?:|s)", {"link": "Stacked Deck"}),
         ("Lesser Eldritch Ember(?:|s)", {"link": "Lesser Eldritch Ember"}),
         ("Greater Eldritch Ember(?:|s)", {"link": "Greater Eldritch Ember"}),
         ("Grand Eldritch Ember(?:|s)", {"link": "Grand Eldritch Ember"}),
@@ -1330,6 +1332,7 @@ _inter_wiki_map = {
         #
         # Area, content, monsters, masters
         #
+        ("Imprisoned Monster(?:|s)", {"link": "Imprisoned Monster"}),
         ("Monster(?:|s)", {"link": "Monster"}),
         ("Boss(?:|es)", {"link": "Boss"}),
         ("Abyss(?:|es)", {"link": "Abyss"}),
@@ -1376,6 +1379,7 @@ _inter_wiki_map = {
         #
         # Other game mechanics
         #
+        ("Experience", {"link": "Experience"}),
         ("Aura(?:|s)", {"link": "Aura"}),
         ("Herald", {"link": "Herald"}),
         ("Curse(?:|s|d)", {"link": "Curse"}),
@@ -1450,6 +1454,7 @@ _inter_wiki_map = {
         ("Crush(?:|ed)", {"link": "Crushed"}),
         ("Life", {"link": "Life"}),
         ("Mana", {"link": "Mana"}),
+        ("Gold", {"link": "Gold"}),
     ),
     "Russian": (
         #
@@ -2426,7 +2431,9 @@ class BaseParser:
                         [format.format(line) for line in result_lines] if result_lines else [format]
                     )
 
-                out = [make_inter_wiki_links(process_keywords(line)) for line in result_lines]
+                for line in result_lines:
+                    if line:
+                        out.append(make_inter_wiki_links(process_keywords(line)))
 
             if result.missing_ids:
                 # Then check for a custom result, using missing values from the results
@@ -2918,6 +2925,10 @@ def strip_keywords(text: str):
 
 
 def process_keywords(text: str):
+    if "[DNT" in text or "[UNUSED" in text:
+        # Don't treat these tags as keywords
+        return text
+
     def replace(match):
         content = match.group(1)
         if "|" in content:
@@ -2929,7 +2940,6 @@ def process_keywords(text: str):
             return f"{{{{keyword|{key}}}}}"
         return f"{{{{keyword|{key}|{display}}}}}"
 
-    text = text.replace("\r", "").replace("\n", "<br>")
     return re.sub(r"(?<!\[)\[([^\[\]]+?)\]", replace, text)
 
 
