@@ -493,6 +493,10 @@ class ItemsParser(parser.BaseParser):
             "Metadata/Items/Amulets/Talismans/Talisman3_6_1": " (Power Charge on Kill)",
             "Metadata/Items/Amulets/Talismans/Talisman3_6_2": " (Frenzy Charge on Kill)",
             "Metadata/Items/Amulets/Talismans/Talisman3_6_3": " (Endurance Charge on Kill)",
+            "Metadata/Items/Amulets/Talismans/Talisman1_1": " (legacy)",
+            "Metadata/Items/Amulets/Talismans/TalismanBlackMaw": "",
+            "Metadata/Items/Amulets/Talismans/Talisman4": " (legacy)",
+            "Metadata/Items/Amulets/Talismans/TalismanGreatwolf": "",
             # =================================================================
             # Currency items
             # =================================================================
@@ -601,6 +605,7 @@ class ItemsParser(parser.BaseParser):
             "Metadata/Items/QuestItems/GoldenPages/Page4": " (4 of 4)",
             "Metadata/Items/QuestItems/Act7/KisharaStar": " (quest item)",
             "Metadata/Items/QuestItems/Act11/DominusKey": " (quest item)",
+            "Metadata/Items/QuestItems/AllFlameLantern1": " (quest item)",
             # =================================================================
             # Heist equipment
             # =================================================================
@@ -1709,6 +1714,7 @@ class ItemsParser(parser.BaseParser):
         "Metadata/Items/MapFragments/Maven/MavenMapAtlas2",
         "Metadata/Items/MapFragments/Maven/MavenMapAtlas3",
         "Metadata/Items/MapFragments/Maven/MavenMapAtlas4",
+        "Metadata/Items/QuestItems/AllFlameLanternDeepwater",
         # =================================================================
         # Misc
         # =================================================================
