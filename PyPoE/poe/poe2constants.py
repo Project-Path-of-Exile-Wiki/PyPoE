@@ -78,7 +78,7 @@ __all__ = [
     "GEM_STYLES",
 ]
 
-MOD_MAX_STATS = 6
+MOD_MAX_STATS = 8
 MOD_STATS_RANGE = range(1, MOD_MAX_STATS + 1)
 
 # Apparently GGG doesnt want us to know this, so they removed it in 3.5.0
