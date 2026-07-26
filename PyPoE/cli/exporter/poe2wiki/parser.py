@@ -85,7 +85,7 @@ from PyPoE.poe.file.translations import (
     get_hardcoded_translation_file,
     install_data_dependant_quantifiers,
 )
-from PyPoE.poe.sim.mods import get_translation_file_from_domain
+from PyPoE.poe.sim.mods import get_mod_translation_file
 from PyPoE.poe.text import parse_description_tags
 
 # =============================================================================
@@ -102,6 +102,7 @@ __all__ = [
     "parse_and_handle_description_tags",
     "process_keywords",
     "strip_keywords",
+    "apply_simple_column_map",
 ]
 
 DEFAULT_INDENT = 32
@@ -1501,9 +1502,9 @@ class BaseParser:
             out_img = decode_dds(data)
             if process:
                 out_img = process(out_img)
-            out_img.save(out_path.replace(".dds", parsed_args.convert_images))
-
-            console('Converted "%s" to png' % out_path)
+            if out_img:
+                out_img.save(out_path.replace(".dds", parsed_args.convert_images))
+                console('Converted "%s" to png' % out_path)
         else:
             with open(out_path, "wb") as f:
                 f.write(self.file_system.extract_dds(data))
@@ -1523,7 +1524,7 @@ class BaseParser:
                     "Can not automatically determine translation file if mod is not set"
                 )
             else:
-                translation_file = get_translation_file_from_domain(mod["Domain"], constants)
+                translation_file = get_mod_translation_file(mod, constants)
         if stats is None or values is None:
             if mod is None:
                 raise ValueError("Mod must be set if any of stats or values aren't set")
@@ -1932,7 +1933,6 @@ def make_inter_wiki_links(string):
     """
 
     _inter_wiki = _inter_wiki_re.get(config.get_option("language"))
-
     if _inter_wiki is None:
         return string
 

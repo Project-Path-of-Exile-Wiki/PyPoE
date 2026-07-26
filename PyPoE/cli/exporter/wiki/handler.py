@@ -275,7 +275,7 @@ class WikiHandler:
                         with open(out_path + ".patch", "w") as f:
                             f.write("\n".join(u_diff))
                     else:
-                        sys.stdout.write("\n".join(u_diff))
+                        sys.stdout.write("\n".join(u_diff) + "\n")
                 else:
                     console(text)
             else:

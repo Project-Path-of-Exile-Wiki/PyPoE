@@ -82,7 +82,7 @@ __all__ = [
     "GEM_STYLES",
 ]
 
-MOD_MAX_STATS = 6
+MOD_MAX_STATS = 8
 MOD_STATS_RANGE = range(1, MOD_MAX_STATS + 1)
 
 # Apparently GGG doesnt want us to know this, so they removed it in 3.5.0
@@ -637,30 +637,6 @@ class MOD_DOMAIN(IntEnumOverride):
     MERCENARY = 41
     DUCAT_CRAFTED = 42
 
-    # legacy names
-    MASTER = CRAFTED
-    JEWEL = MISC
-
-
-MOD_TRANSLATION_MAP = {
-    MOD_DOMAIN.MONSTER: "monster_stat_descriptions.txt",
-    MOD_DOMAIN.CHEST: "chest_stat_descriptions.txt",
-    MOD_DOMAIN.AREA: "map_stat_descriptions.txt",
-    MOD_DOMAIN.ATLAS: "atlas_stat_descriptions.txt",
-    MOD_DOMAIN.LEAGUESTONE: "leaguestone_stat_descriptions.txt",
-    MOD_DOMAIN.DELVE_AREA: "map_stat_descriptions.txt",
-    MOD_DOMAIN.MAP_DEVICE: "map_stat_descriptions.txt",
-    # To properly support zana's innate IIQ
-    MOD_DOMAIN.CRAFTED: "map_stat_descriptions.txt",
-    MOD_DOMAIN.HEIST_NPC: "heist_equipment_stat_descriptions.txt",
-    MOD_DOMAIN.PRIMORDIAL_ALTAR: "primordial_altar_stat_descriptions.txt",
-    MOD_DOMAIN.SENTINEL: "sentinel_stat_descriptions.txt",
-    MOD_DOMAIN.TEMPLAR_RELIC: "sanctum_relic_stat_descriptions.txt",
-    MOD_DOMAIN.TINCTURE: "tincture_stat_descriptions.txt",
-    MOD_DOMAIN.MAP_RELIC: "atlas_relic_stat_descriptions.txt",
-    MOD_DOMAIN.BREQUEL_GRAFT: "graft_stat_descriptions.txt",
-}
-
 
 class MOD_GENERATION_TYPE(IntEnumOverride):
     """
@@ -746,7 +722,65 @@ class MOD_GENERATION_TYPE(IntEnumOverride):
     NECROPOLIS_MONSTER = 34
     NECROPOLIS_DEVOTED_MONSTER = 35
     MEMORY_ALTAR = 36
-    DEEPWATER_CHART = 37
+    DEEPWATER_VOYAGE_PLANNER = 37
+
+
+# This maps mod domains to translation files. For each domain, we can specify
+# translation files for specific generation types, or a default translation file.
+MOD_TRANSLATION_MAP = {
+    MOD_DOMAIN.MONSTER: {
+        "default": "monster_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.CHEST: {
+        "default": "chest_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.AREA: {
+        "default": "map_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.ATLAS: {
+        "default": "atlas_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.LEAGUESTONE: {
+        "default": "leaguestone_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.DELVE_AREA: {
+        "default": "map_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.MAP_DEVICE: {
+        "default": "map_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.CRAFTED: {
+        "default": "map_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.HEIST_NPC: {
+        "default": "heist_equipment_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.PRIMORDIAL_ALTAR: {
+        "default": "primordial_altar_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.SENTINEL: {
+        "default": "sentinel_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.TEMPLAR_RELIC: {
+        "default": "sanctum_relic_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.TINCTURE: {
+        "default": "tincture_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.MAP_RELIC: {
+        "default": "atlas_relic_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.BREQUEL_GRAFT: {
+        "default": "graft_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.DEEPWATER_CHART: {
+        MOD_GENERATION_TYPE.DEEPWATER_VOYAGE_PLANNER: "deepwater_implicit_stat_descriptions.txt",
+        "default": "map_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.DEEPWATER_BORDER: {
+        "default": "deepwater_implicit_stat_descriptions.txt",
+    },
+}
 
 
 class WORDLISTS(IntEnumOverride):
