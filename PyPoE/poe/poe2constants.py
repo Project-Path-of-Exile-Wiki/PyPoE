@@ -605,26 +605,6 @@ class MOD_DOMAIN(IntEnumOverride):
     VAULT_KEY = 36
     INCURSION_LIMB = 37
 
-    # Items that can't have mods (may need to increase the number when new values are added)
-    MODS_DISALLOWED = 38
-
-
-MOD_TRANSLATION_MAP = {
-    MOD_DOMAIN.MONSTER: "monster_stat_descriptions.txt",
-    MOD_DOMAIN.CHEST: "chest_stat_descriptions.txt",
-    MOD_DOMAIN.STRONGBOX: "chest_stat_descriptions.txt",
-    MOD_DOMAIN.AREA: "map_stat_descriptions.txt",
-    MOD_DOMAIN.SANCTUM_RELIC: "sanctum_relic_stat_descriptions.txt",
-    MOD_DOMAIN.CRAFTED: "map_stat_descriptions.txt",
-    MOD_DOMAIN.ATLAS: "atlas_stat_descriptions.txt",
-    MOD_DOMAIN.LEAGUESTONE: "leaguestone_stat_descriptions.txt",
-    MOD_DOMAIN.MAP_DEVICE: "map_stat_descriptions.txt",
-    MOD_DOMAIN.DELVE_AREA: "map_stat_descriptions.txt",
-    MOD_DOMAIN.HEIST_NPC: "heist_equipment_stat_descriptions.txt",
-    MOD_DOMAIN.SENTINEL: "sentinel_stat_descriptions.txt",
-    MOD_DOMAIN.TABLET: "tablet_stat_descriptions.txt",
-}
-
 
 class MOD_GENERATION_TYPE(IntEnumOverride):
     """
@@ -715,6 +695,51 @@ class MOD_GENERATION_TYPE(IntEnumOverride):
     # 32 is unused
     INSTILLED = 33
     AZMERI_EMPOWERED_MONSTER = 34
+
+
+# This maps mod domains to translation files. For each domain, we can specify
+# translation files for specific generation types, or a default translation file.
+MOD_TRANSLATION_MAP = {
+    MOD_DOMAIN.MONSTER: {
+        "default": "monster_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.CHEST: {
+        "default": "chest_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.STRONGBOX: {
+        "default": "chest_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.AREA: {
+        "default": "map_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.SANCTUM_RELIC: {
+        "default": "sanctum_relic_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.CRAFTED: {
+        "default": "map_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.ATLAS: {
+        "default": "atlas_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.LEAGUESTONE: {
+        "default": "leaguestone_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.MAP_DEVICE: {
+        "default": "map_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.DELVE_AREA: {
+        "default": "map_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.HEIST_NPC: {
+        "default": "heist_equipment_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.SENTINEL: {
+        "default": "sentinel_stat_descriptions.txt",
+    },
+    MOD_DOMAIN.TABLET: {
+        "default": "tablet_stat_descriptions.txt",
+    },
+}
 
 
 class WORDLISTS(IntEnumOverride):

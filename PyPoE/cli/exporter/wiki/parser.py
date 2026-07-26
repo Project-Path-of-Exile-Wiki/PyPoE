@@ -85,7 +85,7 @@ from PyPoE.poe.file.translations import (
     get_hardcoded_translation_file,
     install_data_dependant_quantifiers,
 )
-from PyPoE.poe.sim.mods import get_translation_file_from_domain
+from PyPoE.poe.sim.mods import get_mod_translation_file
 from PyPoE.poe.text import parse_description_tags
 
 # =============================================================================
@@ -2309,7 +2309,7 @@ class BaseParser:
                     "Can not automatically determine translation file if mod is not set"
                 )
             else:
-                translation_file = get_translation_file_from_domain(mod["Domain"], constants)
+                translation_file = get_mod_translation_file(mod, constants)
         if stats is None or values is None:
             if mod is None:
                 raise ValueError("Mod must be set if any of stats or values aren't set")

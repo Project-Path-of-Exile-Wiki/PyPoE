@@ -36,7 +36,7 @@ Documentation
     :special-members: __init__
 
 .. autofunction:: get_translation
-.. autofunction:: get_translation_file_from_domain
+.. autofunction:: get_mod_translation_file
 .. autofunction:: get_mod_from_id
 .. autofunction:: get_spawn_weight
 .. autofunction:: generate_spawnable_mod_list
@@ -63,7 +63,7 @@ __all__ = [
     "get_mod_from_id",
     "get_spawn_weight",
     "get_translation",
-    "get_translation_file_from_domain",
+    "get_mod_translation_file",
 ]
 
 # =============================================================================
@@ -218,14 +218,15 @@ class SpawnChanceCalculator:
 # =============================================================================
 
 
-def get_translation_file_from_domain(domain, constants) -> str:
+def get_mod_translation_file(mod, constants) -> str:
     """
-    Returns the likely stat translation file for a given mod domain.
+    Returns the likely stat translation file for a given mod using
+    mapped domains and generation types.
 
     Parameters
     ----------
-    domain : int
-        Id of the domain
+    mod : DatRecord
+
     constants : poe1constants | poe2constants
 
     Returns
@@ -233,10 +234,15 @@ def get_translation_file_from_domain(domain, constants) -> str:
     str
         name of the stat translation file
     """
-    try:
-        return constants.MOD_TRANSLATION_MAP[domain]
-    except KeyError:
-        return "stat_descriptions.txt"
+    domain = mod["Domain"]
+    generation_type = mod["GenerationType"]
+    mtmap = constants.MOD_TRANSLATION_MAP
+    if domain in mtmap:
+        if generation_type in mtmap[domain]:
+            return mtmap[domain][generation_type]
+        if "default" in mtmap[domain]:
+            return mtmap[domain]["default"]
+    return "stat_descriptions.txt"
 
 
 def get_translation(mod, translation_cache, translation_file=None, **kwargs):
@@ -276,7 +282,7 @@ def get_translation(mod, translation_cache, translation_file=None, **kwargs):
         ids.append(stat["Id"])
 
     if translation_file is None:
-        tf_name = get_translation_file_from_domain(mod["Domain"], constants)
+        tf_name = get_mod_translation_file(mod, constants)
     else:
         tf_name = translation_file
 
