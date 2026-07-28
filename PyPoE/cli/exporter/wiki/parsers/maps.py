@@ -733,8 +733,12 @@ class MapsParser(ItemsParser):
             self._type_map_key(infobox, base_item_type)
 
             infobox["map_series"] = map_series["Name"]
-            infobox["map_series_icon"] = name_series
-            icon_name = name_series
+            if base_item_type["Id"] in self._MAPS_TO_SKIP_COMPOSITING:
+                infobox["inventory_icon"] = name
+                icon_name = name
+            else:
+                infobox["map_series_icon"] = name_series
+                icon_name = name_series
 
             if self._language != "English" and parsed_args.english_file_link:
                 infobox["map_series_icon"] = self._format_map_name(

@@ -855,6 +855,7 @@ class PASSIVE_SKILL_SIZES(IntEnumOverride):
     SMALL = 2
     NOTABLE = 3
     KEYSTONE = 4
+    ABYSS_SPECIAL_ASCENDANCY_NOTABLE = 5
 
 
 class PASSIVE_SKILL_TYPES(IntEnumOverride):
