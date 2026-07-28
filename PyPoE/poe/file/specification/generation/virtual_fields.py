@@ -135,6 +135,7 @@ virtual_fields_mappings = {
                 Alias("AncestralTier", "AncestorTier"),
                 Alias("MercenariesTier", "SecretsTier"),
                 Alias("FaridunTier", "MirageTier"),
+                Alias("DeepwaterTier", "AbyssalTier"),
             ],
             "MicrotransactionObjectEffects": [
                 Alias("Script", "Script1"),

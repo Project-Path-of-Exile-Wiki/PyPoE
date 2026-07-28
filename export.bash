@@ -160,25 +160,25 @@ exporting mods &&
 pypoe_exporter $QUIET $WIKI mods mods rowid "${ARGS[@]}" "$@"
 exporting gem-skills &&
 pypoe_exporter $QUIET $WIKI skill by_gem "${IMG[@]}" "${ARGS[@]}" "$@"
+exporting skills &&
+pypoe_exporter $QUIET $WIKI skill by_name "${IMG[@]}" "${ARGS[@]}" "$@"
 exporting items &&
 pypoe_exporter $QUIET $WIKI items item rowid "${IMG[@]}" "${ARGS[@]}" "$@"
+exporting maps && {
+  pypoe_exporter $QUIET $WIKI maps maps "${IMG[@]}" "${ARGS[@]}" "$@"
+  pypoe_exporter $QUIET $WIKI maps atlas "${IMG[@]}" "${ARGS[@]}" "$@"
+  pypoe_exporter $QUIET $WIKI maps map_series "${ARGS[@]}" "$@"
+}
 exporting passives && {
   pypoe_exporter $QUIET $WIKI passive passive rowid "${IMG[@]}" "${ARGS[@]}" "$@"
   pypoe_exporter $QUIET $WIKI passive alternate rowid "${IMG[@]}" "${ARGS[@]}" "$@"
 }
-exporting skills &&
-pypoe_exporter $QUIET $WIKI skill by_name "${IMG[@]}" "${ARGS[@]}" "$@"
 exporting masteries &&
 pypoe_exporter $QUIET $WIKI mastery rowid "${ARGS[@]}" "$@"
 exporting monsters &&
 pypoe_exporter $QUIET $WIKI monster rowid "${ARGS[@]}" "$@"
 exporting areas &&
 pypoe_exporter $QUIET $WIKI area rowid "${ARGS[@]}" "$@"
-exporting maps && {
-  pypoe_exporter $QUIET $WIKI maps maps "${IMG[@]}" "${ARGS[@]}" "$@"
-  pypoe_exporter $QUIET $WIKI maps atlas "${IMG[@]}" "${ARGS[@]}" "$@"
-  pypoe_exporter $QUIET $WIKI maps map_series "${ARGS[@]}" "$@"
-}
 exporting incursion-rooms &&
 pypoe_exporter $QUIET $WIKI incursion rooms rowid "${ARGS[@]}" "$@"
 exporting modules && {

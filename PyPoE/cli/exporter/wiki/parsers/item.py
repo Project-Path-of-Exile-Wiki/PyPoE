@@ -1016,6 +1016,7 @@ class ItemsParser(parser.BaseParser):
         "Metadata/Items/Gems/SupportGemMagnetism",
         "Metadata/Items/Gems/SkillGemVaalSplitArrow",
         "Metadata/Items/Gems/SupportGemWard",
+        "Metadata/Items/Gems/SupportGemCrustaceousGrasp",
         # =================================================================
         # Royale Gear
         # =================================================================
@@ -1734,6 +1735,7 @@ class ItemsParser(parser.BaseParser):
         "Metadata/Items/MapFragments/CurrencyElderFragmentsComplete",
         "Metadata/Items/MapFragments/CurrencyUberElderFragmentsComplete",
         "Metadata/Items/MapFragments/CurrencySirusFragmentsComplete",
+        "Metadata/Items/Deepwater/ChartThermalVents",
     }
 
     # Skip items by class ID
@@ -1743,6 +1745,7 @@ class ItemsParser(parser.BaseParser):
         "HiddenItem",
         "MapKey",
         "RemovedItem",
+        "CocoonedItem",
     }
 
     _ITEM_SKIP_PATTERNS = {

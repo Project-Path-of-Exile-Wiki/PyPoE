@@ -22039,6 +22039,11 @@ specification = Specification(
                     fields=("MirageTier",),
                     alias=True,
                 ),
+                VirtualField(
+                    name="DeepwaterTier",
+                    fields=("AbyssalTier",),
+                    alias=True,
+                ),
             ),
         ),
         "MapStashSpecialSubStashGroup.dat": File(
