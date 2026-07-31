@@ -181,7 +181,7 @@ class WikiCondition(parser.WikiCondition):
         "alternate_art_inventory_icons",
         "frame_type",
         "influences",
-        "card_background",
+        "card_effects",
         # Drop restrictions
         "drop_enabled",
         "acquisition_tags",
@@ -502,6 +502,7 @@ class ItemsParser(parser.BaseParser):
             # =================================================================
             "Metadata/Items/Currency/CurrencySilverCoin": " (Prophecy)",
             "Metadata/Items/Currency/CurrencyAncestralSilverCoin": "",
+            "Metadata/Items/Currency/CurrencyAfflictionOrbHardMode": " (generic)",
             # =================================================================
             # Hideout decorations
             # =================================================================
@@ -1016,7 +1017,6 @@ class ItemsParser(parser.BaseParser):
         "Metadata/Items/Gems/SupportGemMagnetism",
         "Metadata/Items/Gems/SkillGemVaalSplitArrow",
         "Metadata/Items/Gems/SupportGemWard",
-        "Metadata/Items/Gems/SupportGemCrustaceousGrasp",
         # =================================================================
         # Royale Gear
         # =================================================================
@@ -1082,6 +1082,11 @@ class ItemsParser(parser.BaseParser):
         "Metadata/Items/MicrotransactionCurrency/GiftBox3x2",
         "Metadata/Items/MicrotransactionCurrency/GiftBox3x1",
         "Metadata/Items/MicrotransactionCurrency/GiftBox4x1",
+        "Metadata/Items/MicrotransactionCurrency/MicrotransactionWrapper1x1",
+        "Metadata/Items/MicrotransactionCurrency/MicrotransactionWrapper1x2",
+        "Metadata/Items/MicrotransactionCurrency/MicrotransactionWrapper2x1",
+        "Metadata/Items/MicrotransactionCurrency/MicrotransactionWrapper2x2",
+        "Metadata/Items/MicrotransactionCurrency/MicrotransactionWrapper2x3",
         "Metadata/Items/MicrotransactionCurrency/HiddenItem1x1Ritual",
         "Metadata/Items/MicrotransactionCurrency/HiddenItem1x2Ritual",
         "Metadata/Items/MicrotransactionCurrency/HiddenItem1x3Ritual",
@@ -1439,11 +1444,17 @@ class ItemsParser(parser.BaseParser):
         # Currency items
         # =================================================================
         "Metadata/Items/Currency/CurrencyLabyrinthEnchant",
+        "Metadata/Items/Currency/CurrencyIncursionCorrupt1",
+        "Metadata/Items/Currency/CurrencyIncursionCorrupt2",
+        "Metadata/Items/Currency/CurrencyIncursionCorruptGem",
         "Metadata/Items/Currency/RunegraftMinionCannotAttack",
         "Metadata/Items/Currency/RunegraftMatchedSpeed",
         "Metadata/Items/Currency/RunegraftMinionCannotCast",
         "Metadata/Items/Currency/RunegraftTest",
         "Metadata/Items/Currency/AstrolabeSettlers",
+        "Metadata/Items/Currency/CurrencyAfflictionOrbGeneric",
+        "Metadata/Items/Currency/CurrencyAfflictionOrbProphecies",
+        "Metadata/Items/Currency/CurrencyAfflictionOrbHarbinger",
         # =================================================================
         # Non-stackable resonators from before 3.8.0
         # =================================================================
@@ -1758,6 +1769,7 @@ class ItemsParser(parser.BaseParser):
         },
         "StackableCurrency": {
             r"Tencent",
+            r"RandomFossilOutcome",
         },
         "VaultKey": {
             r"Tencent",
@@ -3030,6 +3042,37 @@ class ItemsParser(parser.BaseParser):
                 break
         return True
 
+    def _type_divination_card(self, infobox, base_item_type):
+        parsed_args = self._parsed_args
+        if "BaseItemTypesKey" not in self.rr["DivinationCardArt.dat64"].index:
+            self.rr["DivinationCardArt.dat64"].build_index("BaseItemTypesKey")
+        divcard = self.rr["DivinationCardArt.dat64"].index["BaseItemTypesKey"][base_item_type.rowid]
+
+        if len(divcard["Effects"]) > 0:
+            infobox["card_effects"] = "-".join([v.name_lower for v in divcard["Effects"]])
+
+        # Save card art
+        if parsed_args.store_images:
+
+            def process(img: Image):
+                img = img.crop((0, 0, 390, 280))
+                return img
+
+            if divcard["ArtFile"]:
+                file_path = (
+                    divcard["ArtFile"].replace("Art/", "Art/Textures/Interface/2D/DivinationCards/")
+                    + ".dds"
+                )
+                file_name = base_item_type["Name"] + " card art.dds"
+                img = os.path.join(self._img_path, file_name)
+                self._write_dds(
+                    data=self.file_system.get_file(file_path),
+                    out_path=img,
+                    parsed_args=parsed_args,
+                    process=process,
+                )
+        return True
+
     """
     This defines the expected data elements for an item class.
     """
@@ -3159,7 +3202,7 @@ class ItemsParser(parser.BaseParser):
         "DelveStackableSocketableCurrency": (_type_currency,),
         "HideoutDoodad": (_type_currency, _type_hideout_doodad),
         "Microtransaction": (_type_currency, _type_microtransaction),
-        "DivinationCard": (_type_currency,),
+        "DivinationCard": (_type_currency, _type_divination_card),
         "IncubatorStackable": (_type_currency,),
         "HarvestSeed": (_type_currency, _type_harvest_seed),
         "HarvestPlantBooster": (_type_currency, _type_harvest_plant_booster),

@@ -10882,17 +10882,19 @@ specification = Specification(
                     name="BaseItemTypesKey",
                     type="ref|out",
                     key="BaseItemTypes.dat",
+                    unique=True,
                 ),
                 Field(
-                    name="VirtualFile",
+                    name="ArtFile",
                     type="ref|string",
                 ),
                 Field(
-                    name="Influences",
+                    name="Effects",
                     type="ref|list|int",
+                    enum="CARD_ANIMATED_EFFECTS",
                 ),
                 Field(
-                    name="Unknown0",
+                    name="MaskFile",
                     type="ref|string",
                 ),
             ),

@@ -80,6 +80,7 @@ __all__ = [
     "GAME_MODES",
     "ITEM_VISUAL_COMPOSITIONS",
     "GEM_STYLES",
+    "CARD_ANIMATED_EFFECTS",
 ]
 
 MOD_MAX_STATS = 8
@@ -598,12 +599,11 @@ class MOD_DOMAIN(IntEnumOverride):
     MONSTER = 3
     CHEST = 4
     AREA = 5
-    UNKNOWN1 = 6
+    # 6 is unused
     TEMPLAR_RELIC = 7
-    UNKNOWN3 = 8
+    # 8 is unused
     CRAFTED = 9
-    # Corruptions, item limits, jewel mods, other stuff?
-    MISC = 10
+    JEWEL = 10
     ATLAS = 11
     LEAGUESTONE = 12
     ABYSS_JEWEL = 13
@@ -698,6 +698,7 @@ class MOD_GENERATION_TYPE(IntEnumOverride):
     TALISMAN = 9
     ENCHANTMENT = 10
     ESSENCE = 11
+    # 12 is unused
     BESTIARY = 13
     DELVE_AREA = 14
     SYNTHESIS_A = 15
@@ -717,7 +718,7 @@ class MOD_GENERATION_TYPE(IntEnumOverride):
     EATER_OF_WORLDS_IMPLICIT = 29
     # 30 is unused.
     CRUCIBLE_TREE = 31
-    CRUCIBLE_UNIQUE_TREE = 32
+    CRUCIBLE_TREE_MUTATION = 32
     AZMERI_EMPOWERED_MONSTER = 33
     NECROPOLIS_MONSTER = 34
     NECROPOLIS_DEVOTED_MONSTER = 35
@@ -883,6 +884,26 @@ class GEM_STYLES(IntEnumOverride):
     TRARTHAN = 3
     EXCEPTIONAL = 4
     DEFAULT = 5
+
+
+class CARD_ANIMATED_EFFECTS(Enum, metaclass=IntEnumMetaOverride):
+    id: int
+    name_lower: str
+
+    SHAPER = (0, "shaper")
+    ELDER = (1, "elder")
+    CRUSADER = (2, "crusader")
+    EYRIE = (3, "redeemer")
+    BASILISK = (4, "hunter")
+    ADJUDICATOR = (5, "warlord")
+    ZANA = (6, "zana")
+
+    def __new__(cls, id: int, lower: str):
+        obj = object.__new__(cls)
+        obj._value_ = id
+        obj.id = id
+        obj.name_lower = lower
+        return obj
 
 
 # =============================================================================
