@@ -34,6 +34,11 @@ custom_attributes = {
             enum="DELVE_UPGRADE_TYPE",
         ),
     },
+    "DivinationCardArt.dat": {
+        "Effects": CustomizedField(
+            enum="CARD_ANIMATED_EFFECTS",
+        ),
+    },
     "GemEffects.dat": {
         "ItemColor": CustomizedField(
             enum="GEM_STYLES",
