@@ -1963,7 +1963,6 @@ class ItemsParser(parser.BaseParser):
         infobox["gem_tags"] = parser.strip_keywords(
             ", ".join([gt["Tag"] for gt in gem_effect["GemTags"] if gt["Tag"]])
         )
-        infobox["gem_style"] = gem_effect["ItemColor"]
 
         # Skill IDs
         primary_ge = gem_effect["GrantedEffect"]
@@ -2064,6 +2063,11 @@ class ItemsParser(parser.BaseParser):
                         ),
                         parsed_args=parsed_args,
                     )
+
+        # Used later for shading the gem icon
+        if parsed_args.store_images:
+            infobox["primary_attribute"] = gem_effect["GrantedEffect"]["Attribute"]
+            infobox["gem_style"] = gem_effect["ItemColor"]
 
         return True
 
@@ -3042,14 +3046,8 @@ class ItemsParser(parser.BaseParser):
                 break
         return True
 
-    def _type_divination_card(self, infobox, base_item_type):
+    def _divination_card_extra(self, infobox, base_item_type, divcard):
         parsed_args = self._parsed_args
-        if "BaseItemTypesKey" not in self.rr["DivinationCardArt.dat64"].index:
-            self.rr["DivinationCardArt.dat64"].build_index("BaseItemTypesKey")
-        divcard = self.rr["DivinationCardArt.dat64"].index["BaseItemTypesKey"][base_item_type.rowid]
-
-        if len(divcard["Effects"]) > 0:
-            infobox["card_effects"] = "-".join([v.name_lower for v in divcard["Effects"]])
 
         # Save card art
         if parsed_args.store_images:
@@ -3065,13 +3063,36 @@ class ItemsParser(parser.BaseParser):
                 )
                 file_name = base_item_type["Name"] + " card art.dds"
                 img = os.path.join(self._img_path, file_name)
-                self._write_dds(
-                    data=self.file_system.get_file(file_path),
-                    out_path=img,
-                    parsed_args=parsed_args,
-                    process=process,
-                )
+                try:
+                    self._write_dds(
+                        data=self.file_system.get_file(file_path),
+                        out_path=img,
+                        parsed_args=parsed_args,
+                        process=process,
+                    )
+                except FileNotFoundError:
+                    console(
+                        f"Divination card art file '{file_path}' could not be found",
+                        msg=Msg.warning,
+                    )
         return True
+
+    _type_divination_card = _type_factory(
+        data_file="DivinationCardArt.dat64",
+        data_mapping=(
+            (
+                "Effects",
+                {
+                    "template": "card_effects",
+                    "condition": lambda v: len(v),
+                    "format": lambda v: "-".join(effect.name_lower for effect in v),
+                },
+            ),
+        ),
+        row_index=True,
+        function=_divination_card_extra,
+        fail_condition=True,
+    )
 
     """
     This defines the expected data elements for an item class.
@@ -3672,8 +3693,6 @@ class ItemsParser(parser.BaseParser):
                         process=self._get_icon_process(infobox, base_item_type),
                     )
 
-                infobox.pop("gem_style", None)
-
         return r
 
     def _make_gem_overlays(self, parsed_args):
@@ -3721,19 +3740,13 @@ class ItemsParser(parser.BaseParser):
         return self._resize_icon
 
     def _get_gem_icon_process(self, infobox: dict[str, str], comp):
-        if "gem_style" not in infobox:
+        attr = infobox.pop("primary_attribute", None)
+        style = infobox.pop("gem_style", None)
+        if attr is None or style is None:
             return None
-        style = infobox.pop("gem_style")
 
         def shade(base, style):
-            attr_map = {
-                "str": "strength",
-                "dex": "dexterity",
-                "int": "intelligence",
-            }
-            attrs = {k.lower(): int(infobox.get(f"{v}_percent", 0)) for k, v in attr_map.items()}
-            attr = max(attrs, key=attrs.get)
-            const = SHADE_LUT[(attr, style)]
+            const = SHADE_LUT[(attr.abbr_lower, style)]
             base_rgba = _srgb_to_linear(np.float32(np.asarray(base)) / 255.0)
 
             # Shade algorithm:
