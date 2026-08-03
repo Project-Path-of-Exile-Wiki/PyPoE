@@ -2302,6 +2302,31 @@ class ItemsParser(parser.BaseParser):
         ),
     )
 
+    _type_quest_item = _type_factory(
+        data_file="QuestItems.dat64",
+        index_column="Item",
+        data_mapping=(
+            (
+                "HelpText",
+                {
+                    "template": "help_text",
+                    "condition": lambda v: v,
+                    "format": lambda v: "<br>".join(v["Text"].splitlines()),
+                },
+            ),
+            (
+                "Description",
+                {
+                    "template": "description",
+                    "condition": lambda v: v,
+                    "format": lambda v: v["Text"],
+                },
+            ),
+        ),
+        fail_condition=True,
+        skip_warning=True,
+    )
+
     def _currency_extra(self, infobox, base_item_type, currency):
         if infobox.get("description"):
             infobox["description"] = parser.parse_and_handle_description_tags(
@@ -3215,7 +3240,7 @@ class ItemsParser(parser.BaseParser):
         # 'LabyrinthMapItem': (),
         # Misc
         "MapFragment": (_type_currency, _type_map_fragment),
-        "QuestItem": (_skip_quest_contracts,),
+        "QuestItem": (_type_quest_item, _skip_quest_contracts),
         "AtlasRegionUpgradeItem": (),
         "MetamorphosisDNA": (),
         # heist league

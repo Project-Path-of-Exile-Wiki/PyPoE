@@ -1768,7 +1768,7 @@ class ItemsParser(SkillParserShared):
                 "HelpText",
                 {
                     "template": "help_text",
-                    "condition": lambda v: v is not None,
+                    "condition": lambda v: v,
                     "format": lambda v: parser.process_keywords(v["Text"]),
                 },
             ),
@@ -1776,7 +1776,7 @@ class ItemsParser(SkillParserShared):
                 "Description",
                 {
                     "template": "description",
-                    "condition": lambda v: v is not None,
+                    "condition": lambda v: v,
                     "format": lambda v: parser.process_keywords(v["Text"]),
                 },
             ),
