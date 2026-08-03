@@ -109,18 +109,19 @@ def _skip(*_):
 def _type_factory(
     data_file: str,
     data_mapping: tuple[tuple[str, dict], ...],
-    row_index=True,
+    index_column="BaseItemType",
+    row_index=None,
     function=None,
     fail_condition=False,
     skip_warning=False,
-    index_column="BaseItemType",
 ):
-    def func(self, infobox, base_item_type):
+    def func(self, infobox, base_item_type, extended_type=None):
         if data_file == "BaseItemTypes.dat64":
             data = base_item_type
         else:
             file: DatReader = self.rr[data_file]
-            idx = base_item_type.rowid if row_index else base_item_type["Id"]
+            data_type = extended_type or base_item_type
+            idx = data_type[row_index] if row_index else data_type.rowid
 
             if index_column not in file.index:
                 file.build_index(index_column)
@@ -702,8 +703,6 @@ class ItemsParser(SkillParserShared):
             # =================================================================
             "Metadata/Items/MapFragments/CurrencyAfflictionFragment": " (map fragment)",
         },
-        "Russian": {},
-        "German": {},
     }
 
     _LANG = {
@@ -716,26 +715,6 @@ class ItemsParser(SkillParserShared):
             "decoration_wounded": "%s (%s %s decoration, Wounded)",
             "of": "%s of %s",
             "descent": "Descent",
-        },
-        "German": {
-            "Low": "Niedrige Stufe",
-            "Mid": "Mittlere Stufe",
-            "High": "Hohe Stufe",
-            "Uber": "Maximale Stufe",
-            "decoration": "%s (%s %s Dekoration)",
-            "decoration_wounded": "%s (%s %s Dekoration, verletzt)",
-            "of": "%s von %s",
-            "descent": "Descent",
-        },
-        "Russian": {
-            "Low": "низкий уровень",
-            "Mid": "средний уровень",
-            "High": "высокий уровень",
-            "Uber": "максимальный уровень",
-            "decoration": "%s (%s %s предмет убежища)",
-            "decoration_wounded": "%s (%s %s предмет убежища, Раненый)",
-            "of": "%s из %s",
-            "descent": "Спуск",
         },
     }
 
@@ -1555,7 +1534,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         fail_condition=True,
     )
 
@@ -1613,7 +1591,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
     )
 
     _type_shield = _type_factory(
@@ -1626,7 +1603,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
     )
 
     def _apply_flask_buffs(self, infobox, base_item_type, flasks):
@@ -1679,13 +1655,13 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         function=_apply_flask_buffs,
     )
 
     _type_flask_charges = _type_factory(
         data_file="ComponentCharges.dat64",
         index_column="BaseItemTypesKey",
+        row_index="Id",
         data_mapping=(
             (
                 "MaxCharges",
@@ -1700,7 +1676,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=False,
     )
 
     _type_weapon = _type_factory(
@@ -1748,7 +1723,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
     )
 
     _type_spirit = _type_factory(
@@ -1762,7 +1736,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         fail_condition=True,
     )
 
@@ -1773,7 +1746,7 @@ class ItemsParser(SkillParserShared):
                 "HelpText",
                 {
                     "template": "help_text",
-                    "condition": lambda v: v is not None,
+                    "condition": lambda v: v,
                     "format": lambda v: parser.process_keywords(v["Text"]),
                 },
             ),
@@ -1781,12 +1754,11 @@ class ItemsParser(SkillParserShared):
                 "Description",
                 {
                     "template": "description",
-                    "condition": lambda v: v is not None,
+                    "condition": lambda v: v,
                     "format": lambda v: parser.process_keywords(v["Text"]),
                 },
             ),
         ),
-        row_index=True,
     )
 
     def _currency_extra(self, infobox, base_item_type, currency):
@@ -1839,7 +1811,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         function=_currency_extra,
         fail_condition=True,
     )
@@ -1855,7 +1826,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         fail_condition=True,
         skip_warning=True,
     )
@@ -1882,7 +1852,6 @@ class ItemsParser(SkillParserShared):
             ),
         ),
         function=_type_map_extra,
-        row_index=True,
     )
 
     def _type_essence_extra(self, infobox, base_item_type, essence):
@@ -1926,7 +1895,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         function=_type_essence_extra,
         fail_condition=True,
         skip_warning=True,
@@ -1950,7 +1918,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         fail_condition=True,
         skip_warning=True,
     )
@@ -1973,7 +1940,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         fail_condition=True,
         skip_warning=True,
     )
@@ -2077,7 +2043,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         function=_type_soulcore_extra,
     )
 
@@ -2332,7 +2297,6 @@ class ItemsParser(SkillParserShared):
 
         tags = [t["Id"] for t in base_item_type["TagsKeys"]]
         infobox["tags"] = ", ".join(tags + list(ot["Base"]["tag"]))
-
         infobox["metadata_id"] = m_id
 
         description = ot["Stack"].get("function_text")
@@ -2399,6 +2363,11 @@ class ItemsParser(SkillParserShared):
                             msg=Msg.warning,
                         )
                         return
+                    console(
+                        'Name conflict resolved for item "%s" with name "%s": "%s"'
+                        % (m_id, infobox["name"], name),
+                        msg=Msg.warning,
+                    )
                 else:
                     console(
                         'Unresolved ambiguous item "%s" with name "%s". Skipping'
@@ -2406,7 +2375,7 @@ class ItemsParser(SkillParserShared):
                         msg=Msg.warning,
                     )
                     console(
-                        'No name conflict handler defined for item class id "%s"' % cls_id,
+                        'No name conflict handler defined for item class ID "%s"' % cls_id,
                         msg=Msg.warning,
                     )
                     return
