@@ -703,8 +703,6 @@ class ItemsParser(SkillParserShared):
             # =================================================================
             "Metadata/Items/MapFragments/CurrencyAfflictionFragment": " (map fragment)",
         },
-        "Russian": {},
-        "German": {},
     }
 
     _LANG = {
@@ -717,26 +715,6 @@ class ItemsParser(SkillParserShared):
             "decoration_wounded": "%s (%s %s decoration, Wounded)",
             "of": "%s of %s",
             "descent": "Descent",
-        },
-        "German": {
-            "Low": "Niedrige Stufe",
-            "Mid": "Mittlere Stufe",
-            "High": "Hohe Stufe",
-            "Uber": "Maximale Stufe",
-            "decoration": "%s (%s %s Dekoration)",
-            "decoration_wounded": "%s (%s %s Dekoration, verletzt)",
-            "of": "%s von %s",
-            "descent": "Descent",
-        },
-        "Russian": {
-            "Low": "низкий уровень",
-            "Mid": "средний уровень",
-            "High": "высокий уровень",
-            "Uber": "максимальный уровень",
-            "decoration": "%s (%s %s предмет убежища)",
-            "decoration_wounded": "%s (%s %s предмет убежища, Раненый)",
-            "of": "%s из %s",
-            "descent": "Спуск",
         },
     }
 
@@ -2319,7 +2297,6 @@ class ItemsParser(SkillParserShared):
 
         tags = [t["Id"] for t in base_item_type["TagsKeys"]]
         infobox["tags"] = ", ".join(tags + list(ot["Base"]["tag"]))
-
         infobox["metadata_id"] = m_id
 
         description = ot["Stack"].get("function_text")
