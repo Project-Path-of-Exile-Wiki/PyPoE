@@ -391,7 +391,7 @@ class ItemsParser(parser.BaseParser):
             "Metadata/Items/PantheonSouls/PantheonSoulRyslathaUpgrade1": (
                 "Captured Soul (Ryslatha upgrade)"
             ),
-        }
+        },
     }
 
     _NAME_APPENDIX_BY_ID = {
@@ -501,6 +501,7 @@ class ItemsParser(parser.BaseParser):
             # =================================================================
             # Currency items
             # =================================================================
+            "Metadata/Items/Currency/CurrencyItemisedProphecy": " (base item)",
             "Metadata/Items/Currency/CurrencySilverCoin": " (Prophecy)",
             "Metadata/Items/Currency/CurrencyAncestralSilverCoin": "",
             "Metadata/Items/Currency/CurrencyAfflictionOrbHardMode": " (generic)",
@@ -562,16 +563,6 @@ class ItemsParser(parser.BaseParser):
             # =================================================================
             # Cosmetic items
             # =================================================================
-            "Metadata/Items/MicrotransactionCurrency/MysteryBox1x1": " (1x1)",
-            "Metadata/Items/MicrotransactionCurrency/MysteryBox1x2": " (1x2)",
-            "Metadata/Items/MicrotransactionCurrency/MysteryBox1x3": " (1x3)",
-            "Metadata/Items/MicrotransactionCurrency/MysteryBox1x4": " (1x4)",
-            "Metadata/Items/MicrotransactionCurrency/MysteryBox2x1": " (2x1)",
-            "Metadata/Items/MicrotransactionCurrency/MysteryBox2x2": " (2x2)",
-            "Metadata/Items/MicrotransactionCurrency/MysteryBox2x3": " (2x3)",
-            "Metadata/Items/MicrotransactionCurrency/MysteryBox2x4": " (2x4)",
-            "Metadata/Items/MicrotransactionCurrency/MysteryBox3x2": " (3x2)",
-            "Metadata/Items/MicrotransactionCurrency/MysteryBox3x3": " (3x3)",
             "Metadata/Items/MicrotransactionItemEffects/MicrotransactionIronMaiden": " (helmet skin)",
             "Metadata/Items/MicrotransactionItemEffects/MicrotransactionInfernalAxe": " (weapon skin)",
             "Metadata/Items/MicrotransactionItemEffects/MicrotransactionColossusSword": "",
@@ -1140,6 +1131,7 @@ class ItemsParser(parser.BaseParser):
         "Metadata/Items/Currency/CurrencyAfflictionOrbGeneric",
         "Metadata/Items/Currency/CurrencyAfflictionOrbProphecies",
         "Metadata/Items/Currency/CurrencyAfflictionOrbHarbinger",
+        "Metadata/Items/Deepwater/DeepwaterAtlasEncounterCurrency",
         # =================================================================
         # Non-stackable resonators from before 3.8.0
         # =================================================================
@@ -1271,16 +1263,48 @@ class ItemsParser(parser.BaseParser):
         "Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable3_7",
         "Metadata/Items/AtlasUpgrades/AtlasUpgradeCraftable3_8",
         # =================================================================
-        # Mavenvitations (removed from the game in 3.17.0)
+        # Old Maven invitations (removed from the game in 3.17.0)
         # =================================================================
-        "Metadata/Items/MapFragments/Maven/MavenMapOutsideBottomRight5",
-        "Metadata/Items/MapFragments/Maven/MavenMapOutsideBottomLeft5",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideTopLeft1",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideTopLeft2",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideTopLeft3",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideTopLeft4",
         "Metadata/Items/MapFragments/Maven/MavenMapOutsideTopLeft5",
-        "Metadata/Items/MapFragments/Maven/MavenMapOutsideTopRight5",
-        "Metadata/Items/MapFragments/Maven/MavenMapInsideBottomRight5",
-        "Metadata/Items/MapFragments/Maven/MavenMapInsideBottomLeft5",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideTopLeft1",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideTopLeft2",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideTopLeft3",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideTopLeft4",
         "Metadata/Items/MapFragments/Maven/MavenMapInsideTopLeft5",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideTopRight1",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideTopRight2",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideTopRight3",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideTopRight4",
         "Metadata/Items/MapFragments/Maven/MavenMapInsideTopRight5",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideTopRight1",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideTopRight2",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideTopRight3",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideTopRight4",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideTopRight5",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideBottomLeft1",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideBottomLeft2",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideBottomLeft3",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideBottomLeft4",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideBottomLeft5",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideBottomLeft1",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideBottomLeft2",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideBottomLeft3",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideBottomLeft4",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideBottomLeft5",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideBottomRight1",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideBottomRight2",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideBottomRight3",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideBottomRight4",
+        "Metadata/Items/MapFragments/Maven/MavenMapInsideBottomRight5",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideBottomRight1",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideBottomRight2",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideBottomRight3",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideBottomRight4",
+        "Metadata/Items/MapFragments/Maven/MavenMapOutsideBottomRight5",
         "Metadata/Items/MapFragments/Maven/MavenMapVoid1",
         "Metadata/Items/MapFragments/Maven/MavenMapVoid2",
         "Metadata/Items/MapFragments/Maven/MavenMapVoid3",
@@ -1342,12 +1366,86 @@ class ItemsParser(parser.BaseParser):
         "Metadata/Items/Relics/Relic3x1",
         "Metadata/Items/Relics/Relic4x1",
         # =================================================================
+        # Old scarabs (removed from the game in 3.24.0)
+        # =================================================================
+        "Metadata/Items/Scarabs/ScarabBreach1",
+        "Metadata/Items/Scarabs/ScarabBreach2",
+        "Metadata/Items/Scarabs/ScarabBreach3",
+        "Metadata/Items/Scarabs/ScarabBreach4",
+        "Metadata/Items/Scarabs/ScarabMaps1",
+        "Metadata/Items/Scarabs/ScarabMaps2",
+        "Metadata/Items/Scarabs/ScarabMaps3",
+        "Metadata/Items/Scarabs/ScarabMaps4",
+        "Metadata/Items/Scarabs/ScarabUniques1",
+        "Metadata/Items/Scarabs/ScarabUniques2",
+        "Metadata/Items/Scarabs/ScarabUniques3",
+        "Metadata/Items/Scarabs/ScarabUniques4",
+        "Metadata/Items/Scarabs/ScarabBeasts1",
+        "Metadata/Items/Scarabs/ScarabBeasts2",
+        "Metadata/Items/Scarabs/ScarabBeasts3",
+        "Metadata/Items/Scarabs/ScarabBeasts4",
+        "Metadata/Items/Scarabs/ScarabShaperRares1",
+        "Metadata/Items/Scarabs/ScarabShaperRares2",
+        "Metadata/Items/Scarabs/ScarabShaperRares3",
+        "Metadata/Items/Scarabs/ScarabShaperRares4",
+        "Metadata/Items/Scarabs/ScarabElderRares1",
+        "Metadata/Items/Scarabs/ScarabElderRares2",
+        "Metadata/Items/Scarabs/ScarabElderRares3",
+        "Metadata/Items/Scarabs/ScarabElderRares4",
+        "Metadata/Items/Scarabs/ScarabSulphite1",
+        "Metadata/Items/Scarabs/ScarabSulphite2",
+        "Metadata/Items/Scarabs/ScarabSulphite3",
+        "Metadata/Items/Scarabs/ScarabSulphite4",
+        "Metadata/Items/Scarabs/ScarabDivinationCards1",
+        "Metadata/Items/Scarabs/ScarabDivinationCards2",
+        "Metadata/Items/Scarabs/ScarabDivinationCards3",
+        "Metadata/Items/Scarabs/ScarabDivinationCards4",
+        "Metadata/Items/Scarabs/ScarabTorment1",
+        "Metadata/Items/Scarabs/ScarabTorment2",
+        "Metadata/Items/Scarabs/ScarabTorment3",
+        "Metadata/Items/Scarabs/ScarabTorment4",
+        "Metadata/Items/Scarabs/ScarabStrongbox1",
+        "Metadata/Items/Scarabs/ScarabStrongbox2",
+        "Metadata/Items/Scarabs/ScarabStrongbox3",
+        "Metadata/Items/Scarabs/ScarabStrongbox4",
+        "Metadata/Items/Scarabs/ScarabHarbinger1",
+        "Metadata/Items/Scarabs/ScarabHarbinger2",
+        "Metadata/Items/Scarabs/ScarabHarbinger3",
+        "Metadata/Items/Scarabs/ScarabHarbinger4",
+        "Metadata/Items/Scarabs/ScarabPerandus1",
+        "Metadata/Items/Scarabs/ScarabPerandus2",
+        "Metadata/Items/Scarabs/ScarabPerandus3",
+        "Metadata/Items/Scarabs/ScarabPerandus4",
+        "Metadata/Items/Scarabs/ScarabLegion1",
+        "Metadata/Items/Scarabs/ScarabLegion2",
+        "Metadata/Items/Scarabs/ScarabLegion3",
+        "Metadata/Items/Scarabs/ScarabLegion4",
+        "Metadata/Items/Scarabs/ScarabMetamorph1",
+        "Metadata/Items/Scarabs/ScarabMetamorph2",
+        "Metadata/Items/Scarabs/ScarabMetamorph3",
+        "Metadata/Items/Scarabs/ScarabMetamorph4",
+        "Metadata/Items/Scarabs/ScarabBlight1",
+        "Metadata/Items/Scarabs/ScarabBlight2",
+        "Metadata/Items/Scarabs/ScarabBlight3",
+        "Metadata/Items/Scarabs/ScarabBlight4",
+        "Metadata/Items/Scarabs/ScarabAbyss1",
+        "Metadata/Items/Scarabs/ScarabAbyss2",
+        "Metadata/Items/Scarabs/ScarabAbyss3",
+        "Metadata/Items/Scarabs/ScarabAbyss4",
+        # =================================================================
         # Map fragments
         # =================================================================
-        "Metadata/Items/Scarabs/ScarabMisc6",
-        "Metadata/Items/Scarabs/ScarabMisc7",
+        "Metadata/Items/MapFragments/CurrencyVaalFragments1Complete",
+        "Metadata/Items/MapFragments/CurrencyVaalFragments2Complete",
+        "Metadata/Items/MapFragments/CurrencyProphecyFragmentsComplete",
+        "Metadata/Items/MapFragments/CurrencyShaperFragmentsComplete",
+        "Metadata/Items/MapFragments/CurrencyElderFragmentsComplete",
+        "Metadata/Items/MapFragments/CurrencyUberElderFragmentsComplete",
+        "Metadata/Items/MapFragments/CurrencySirusFragmentsComplete",
         "Metadata/Items/MapFragments/RatsAllflamePack",
         "Metadata/Items/MapFragments/Maven/MavenMapAtlas5",
+        "Metadata/Items/Scarabs/ScarabMisc6",
+        "Metadata/Items/Scarabs/ScarabMisc7",
         # =================================================================
         # Corpse items
         # =================================================================
@@ -1398,15 +1496,17 @@ class ItemsParser(parser.BaseParser):
         "Metadata/Items/QuestItems/MapUpgrades/MapUpgradeTier10_3",
         "Metadata/Items/QuestItems/MapUpgrades/MapUpgradeTierTo16",
         "Metadata/Items/Heist/QuestItems/HeistFinalObjectiveQuestFaustus1B",
+        "Metadata/Items/Heist/QuestItems/HeistFinalObjectiveQuestFaustus3",
         "Metadata/Items/Heist/QuestItems/HeistFinalObjectiveQuestNenet1",
         "Metadata/Items/Heist/QuestItems/HeistFinalObjectiveQuestNenet2",
         "Metadata/Items/Heist/QuestItems/HeistFinalObjectiveQuestAdiyah3",
         "Metadata/Items/Heist/QuestItems/HeistFinalObjectiveQuestKurai2",
         "Metadata/Items/Heist/QuestItems/HeistFinalObjectiveQuestKurai3",
+        "Metadata/Items/Heist/QuestItems/HeistFinalObjectiveQuestKurai4",
         "Metadata/Items/Heist/QuestItems/HeistFinalObjectiveQuestWhakano3",
+        "Metadata/Items/Heist/QuestItems/HeistFinalObjectiveQuestIsla3",
         "Metadata/Items/Heist/QuestContracts/HeistContractQuestNenet1",
         "Metadata/Items/Heist/QuestContracts/HeistContractQuestNenetRepeatable",
-        "Metadata/Items/Heist/QuestItems/HeistFinalObjectiveQuestIsla3",
         "Metadata/Items/Masters/PirateTreasureKey",
         "Metadata/Items/MapFragments/Maven/MavenMapAtlas2",
         "Metadata/Items/MapFragments/Maven/MavenMapAtlas3",
@@ -1415,6 +1515,8 @@ class ItemsParser(parser.BaseParser):
         # =================================================================
         # Misc
         # =================================================================
+        "Metadata/Items/QuestItems/Labyrinth/Trinkets/VialOfPower",
+        "Metadata/Items/QuestItems/Labyrinth/Trinkets/BlackRoseOfAnarchy",
         "Metadata/Items/Heist/HeistEquipmentToolTest",
         "Metadata/Items/Heist/HeistEquipmentWeaponTest",
         "Metadata/Items/Heist/HeistEquipmentUtilityTest",
@@ -1424,13 +1526,6 @@ class ItemsParser(parser.BaseParser):
         "Metadata/Items/Armours/BodyArmours/BodyStrTemp",
         "Metadata/Items/Armours/Boots/BootsStrTemp",
         "Metadata/Items/Classic/MysteryLeaguestone",
-        "Metadata/Items/MapFragments/CurrencyVaalFragments1Complete",
-        "Metadata/Items/MapFragments/CurrencyVaalFragments2Complete",
-        "Metadata/Items/MapFragments/CurrencyProphecyFragmentsComplete",
-        "Metadata/Items/MapFragments/CurrencyShaperFragmentsComplete",
-        "Metadata/Items/MapFragments/CurrencyElderFragmentsComplete",
-        "Metadata/Items/MapFragments/CurrencyUberElderFragmentsComplete",
-        "Metadata/Items/MapFragments/CurrencySirusFragmentsComplete",
         "Metadata/Items/Deepwater/ChartThermalVents",
     }
 
@@ -1442,6 +1537,9 @@ class ItemsParser(parser.BaseParser):
         "MapKey",
         "RemovedItem",
         "CocoonedItem",
+        "HideoutDoodad",
+        "Microtransaction",
+        "GiftBox",
     }
 
     _ITEM_SKIP_PATTERNS = {
@@ -3031,18 +3129,8 @@ class ItemsParser(parser.BaseParser):
         "BrequelGraft": (_type_graft,),
     }
 
-    _conflict_active_skill_gems_map = {
-        "Metadata/Items/Gems/SkillGemArcticArmour": True,
-        "Metadata/Items/Gems/SkillGemPhaseRun": True,
-        "Metadata/Items/Gems/SkillGemLightningTendrils": True,
-    }
-
     def _conflict_active_skill_gems(self, infobox, base_item_type, rr, language):
-        appendix = self._conflict_active_skill_gems_map.get(base_item_type["Id"])
-        if appendix is None:
-            return
-        else:
-            return base_item_type["Name"]
+        return
 
     def _conflict_quest_items(self, infobox, base_item_type, rr, language):
         qid = base_item_type["Id"].replace("Metadata/Items/QuestItems/", "")
