@@ -15928,7 +15928,7 @@ specification = Specification(
                     key="HeistAreas.dat",
                 ),
                 Field(
-                    name="Unknown0",
+                    name="AreaLevel",
                     type="int",
                 ),
             ),
@@ -16384,6 +16384,7 @@ specification = Specification(
                     name="NPCsKey",
                     type="ref|out",
                     key="NPCs.dat",
+                    unique=True,
                 ),
                 Field(
                     name="MonsterVarietiesKey",
@@ -16478,9 +16479,10 @@ specification = Specification(
                 Field(
                     name="Tier",
                     type="int",
+                    unique=True,
                 ),
                 Field(
-                    name="MarkersMultiply",
+                    name="ValueMultiLessThan",
                     type="float",
                 ),
                 Field(
@@ -16498,11 +16500,11 @@ specification = Specification(
                     unique=True,
                 ),
                 Field(
-                    name="Scaling",
+                    name="ValueMulti",
                     type="float",
                 ),
                 Field(
-                    name="Name",
+                    name="Client",
                     type="ref|string",
                 ),
             ),
@@ -16546,6 +16548,7 @@ specification = Specification(
                     name="HeistContractsKey",
                     type="ref|out",
                     key="HeistContracts.dat",
+                    unique=True,
                 ),
                 Field(
                     name="HeistObjectivesKey",
@@ -16571,7 +16574,7 @@ specification = Specification(
                     type="int",
                 ),
                 Field(
-                    name="Unknown2",
+                    name="JobLevel",
                     type="int",
                 ),
                 Field(
@@ -16597,11 +16600,11 @@ specification = Specification(
                     type="bool",
                 ),
                 Field(
-                    name="Unknown3",
+                    name="Unknown2",
                     type="int",
                 ),
                 Field(
-                    name="Unknown4",
+                    name="Unknown3",
                     type="int",
                 ),
                 Field(
@@ -16667,7 +16670,7 @@ specification = Specification(
                     key="HeistIntroAreas.dat",
                 ),
                 Field(
-                    name="Unknown5",
+                    name="Unknown4",
                     type="int",
                 ),
                 Field(
@@ -16676,7 +16679,7 @@ specification = Specification(
                     key="HeistRooms.dat",
                 ),
                 Field(
-                    name="Unknown6",
+                    name="Unknown5",
                     type="ref|string",
                 ),
             ),

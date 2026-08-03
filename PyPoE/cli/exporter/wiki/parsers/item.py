@@ -1837,9 +1837,6 @@ class ItemsParser(parser.BaseParser):
     def _in_skip_list(self, item):
         return item and item["Id"] in self._skipped_items
 
-    def _skip_quest_contracts(self, infobox: OrderedDict, base_item_type):
-        return base_item_type.rowid not in self.rr["HeistContracts.dat64"].index["BaseItemTypesKey"]
-
     def _tattoo(self, infobox: OrderedDict, base_item_type):
         if "BaseItemTypesKey" not in self.rr["PassiveSkillTattoos.dat64"].index:
             self.rr["PassiveSkillTattoos.dat64"].build_index("BaseItemTypesKey")
@@ -2921,6 +2918,86 @@ class ItemsParser(parser.BaseParser):
         # fail_condition=True,
     )
 
+    def _determine_heist_objective_value(self, objective):
+        value = None
+        for row in self.rr["HeistObjectiveValueDescriptions.dat64"]:
+            value = row["Description"]
+            if row["ValueMultiLessThan"] > objective["ValueMulti"]:
+                break
+        return value
+
+    def _heist_objective_extra(self, infobox, base_item_type, objective):
+        value = self._determine_heist_objective_value(objective)
+        if value:
+            infobox["heist_target_value"] = value
+        return True
+
+    _type_heist_objective = _type_factory(
+        data_file="HeistObjectives.dat64",
+        index_column="BaseItemType",
+        data_mapping=(
+            (
+                "Client",
+                {
+                    "template": "heist_client",
+                    "condition": lambda v: v,
+                },
+            ),
+        ),
+        function=_heist_objective_extra,
+        fail_condition=True,
+        skip_warning=True,
+    )
+
+    def _heist_quest_contract_extra(self, infobox, base_item_type, quest_contract):
+        objective = quest_contract["HeistObjectivesKey"]
+        if objective["Client"]:
+            infobox["heist_client"] = objective["Client"]
+        target = objective["BaseItemType"]
+        infobox["heist_target"] = target["Name"]
+        value = self._determine_heist_objective_value(objective)
+        if value:
+            infobox["heist_target_value"] = value
+        if target["FlavourTextKey"]:
+            infobox["flavour_text"] = parser.parse_and_handle_description_tags(
+                rr=self.rr,
+                text=target["FlavourTextKey"]["Text"],
+            )
+        return True
+
+    _heist_quest_contract = _type_factory(
+        data_file="HeistQuestContracts.dat64",
+        index_column="HeistContractsKey",
+        data_mapping=(
+            (
+                "HeistJobsKey",
+                {
+                    "template": "heist_required_job_id",
+                    "condition": lambda v: v,
+                    "format": lambda v: v["Id"],
+                },
+            ),
+            (
+                "JobLevel",
+                {
+                    "template": "heist_required_job_level",
+                    "condition": lambda v: v > 0,
+                },
+            ),
+            (
+                "HeistNPCsKey",
+                {
+                    "template": "heist_required_member",
+                    "condition": lambda v: v,
+                    "format": lambda v: ", ".join(npc["Name"] for npc in v),
+                },
+            ),
+        ),
+        function=_heist_quest_contract_extra,
+        fail_condition=True,
+        skip_warning=True,
+    )
+
     _type_heist_contract = _type_factory(
         data_file="HeistContracts.dat64",
         data_mapping=(
@@ -2932,6 +3009,9 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
+        function=_heist_quest_contract,
+        fail_condition=True,
+        skip_warning=True,
     )
 
     _type_heist_equipment = _type_factory(
@@ -3240,7 +3320,7 @@ class ItemsParser(parser.BaseParser):
         # 'LabyrinthMapItem': (),
         # Misc
         "MapFragment": (_type_currency, _type_map_fragment),
-        "QuestItem": (_type_quest_item, _skip_quest_contracts),
+        "QuestItem": (_type_quest_item, _type_heist_contract),
         "AtlasRegionUpgradeItem": (),
         "MetamorphosisDNA": (),
         # heist league
@@ -3251,7 +3331,7 @@ class ItemsParser(parser.BaseParser):
         "HeistEquipmentReward": (_type_heist_equipment,),
         "HeistBlueprint": (),
         "Trinket": (),
-        "HeistObjective": (),
+        "HeistObjective": (_type_heist_objective,),
         "Breachstone": (_type_currency,),
         "ItemisedCorpse": (_type_corpse,),
         "NecropolisPack": (_allflame_ember,),
