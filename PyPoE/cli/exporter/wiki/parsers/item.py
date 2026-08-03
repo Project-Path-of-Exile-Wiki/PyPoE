@@ -2261,12 +2261,12 @@ class ItemsParser(parser.BaseParser):
         ),
     )
 
-    def _map_fragment_extra(self, infobox, base_item_type, map_fragment_mods):
-        if map_fragment_mods["ModsKeys"]:
+    def _map_fragment_extra(self, infobox, base_item_type, map_fragment):
+        if map_fragment["ModsKeys"]:
             i = 1
             while infobox.get("map_fragment_bonus%s" % i) is not None:
                 i += 1
-            for mod in map_fragment_mods["ModsKeys"]:
+            for mod in map_fragment["ModsKeys"]:
                 infobox["map_fragment_bonus%s" % i] = mod["Id"]
                 i += 1
 
@@ -2282,6 +2282,7 @@ class ItemsParser(parser.BaseParser):
         ),
         function=_map_fragment_extra,
         fail_condition=True,
+        skip_warning=True,
     )
 
     def _essence_extra(self, infobox, base_item_type, essence):
