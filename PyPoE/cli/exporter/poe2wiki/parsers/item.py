@@ -2363,6 +2363,11 @@ class ItemsParser(SkillParserShared):
                             msg=Msg.warning,
                         )
                         return
+                    console(
+                        'Name conflict resolved for item "%s" with name "%s": "%s"'
+                        % (m_id, infobox["name"], name),
+                        msg=Msg.warning,
+                    )
                 else:
                     console(
                         'Unresolved ambiguous item "%s" with name "%s". Skipping'
@@ -2370,7 +2375,7 @@ class ItemsParser(SkillParserShared):
                         msg=Msg.warning,
                     )
                     console(
-                        'No name conflict handler defined for item class id "%s"' % cls_id,
+                        'No name conflict handler defined for item class ID "%s"' % cls_id,
                         msg=Msg.warning,
                     )
                     return
