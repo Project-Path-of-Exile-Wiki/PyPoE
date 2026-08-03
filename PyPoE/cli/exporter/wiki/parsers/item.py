@@ -95,18 +95,19 @@ def _linear_to_srgb(img):
 def _type_factory(
     data_file: str,
     data_mapping: tuple[tuple[str, dict], ...],
-    row_index=True,
+    index_column="BaseItemTypesKey",
+    row_index=None,
     function=None,
     fail_condition=False,
     skip_warning=False,
-    index_column="BaseItemTypesKey",
 ):
-    def func(self, infobox, base_item_type):
+    def func(self, infobox, base_item_type, extended_type=None):
         if data_file == "BaseItemTypes.dat64":
             data = base_item_type
         else:
             file: DatReader = self.rr[data_file]
-            idx = base_item_type.rowid if row_index else base_item_type["Id"]
+            data_type = extended_type or base_item_type
+            idx = data_type[row_index] if row_index else data_type.rowid
 
             if index_column not in file.index:
                 file.build_index(index_column)
@@ -2077,6 +2078,7 @@ class ItemsParser(parser.BaseParser):
 
     _type_attribute = _type_factory(
         data_file="ComponentAttributeRequirements.dat64",
+        row_index="Id",
         data_mapping=(
             (
                 "ReqStr",
@@ -2100,7 +2102,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=False,
     )
 
     _type_armour = _type_factory(
@@ -2170,7 +2171,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
     )
 
     _type_shield = _type_factory(
@@ -2183,7 +2183,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
     )
 
     def _apply_flask_buffs(self, infobox, base_item_type, flasks):
@@ -2242,12 +2241,12 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
         function=_apply_flask_buffs,
     )
 
     _type_flask_charges = _type_factory(
         data_file="ComponentCharges.dat64",
+        row_index="Id",
         data_mapping=(
             (
                 "MaxCharges",
@@ -2262,7 +2261,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=False,
     )
 
     _type_weapon = _type_factory(
@@ -2302,7 +2300,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
     )
 
     def _currency_extra(self, infobox, base_item_type, currency):
@@ -2347,7 +2344,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
         function=_currency_extra,
         fail_condition=True,
     )
@@ -2557,7 +2553,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
     )
 
     def _map_fragment_extra(self, infobox, base_item_type, map_fragment_mods):
@@ -2579,7 +2574,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
         function=_map_fragment_extra,
         fail_condition=True,
     )
@@ -2713,7 +2707,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
         function=_essence_extra,
         fail_condition=True,
         skip_warning=True,
@@ -2729,7 +2722,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
         fail_condition=True,
         skip_warning=True,
     )
@@ -2745,7 +2737,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
     )
 
     _type_incubator = _type_factory(
@@ -2759,7 +2750,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
     )
 
     def _harvest_seed_extra(self, infobox, base_item_type, harvest_object):
@@ -2853,7 +2843,6 @@ class ItemsParser(parser.BaseParser):
         ),
         function=_harvest_seed_extra,
         # fail_condition=True,
-        row_index=True,
     )
 
     def _harvest_plant_booster_extra(self, infobox, base_item_type, harvest_object):
@@ -2905,7 +2894,6 @@ class ItemsParser(parser.BaseParser):
         data_mapping=(),
         function=_harvest_plant_booster_extra,
         # fail_condition=True,
-        row_index=True,
     )
 
     _type_heist_contract = _type_factory(
@@ -2919,7 +2907,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
     )
 
     _type_heist_equipment = _type_factory(
@@ -2941,7 +2928,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
     )
 
     _type_corpse = _type_factory(
@@ -2973,7 +2959,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
     )
 
     _type_tincture = _type_factory(
@@ -2997,7 +2982,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
     )
 
     _type_sentinel = _type_factory(
@@ -3033,7 +3017,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
     )
 
     def _type_graft(self, infobox, base_item_type):
@@ -3089,7 +3072,6 @@ class ItemsParser(parser.BaseParser):
                 },
             ),
         ),
-        row_index=True,
         function=_divination_card_extra,
         fail_condition=True,
     )

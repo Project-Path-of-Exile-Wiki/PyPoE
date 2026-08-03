@@ -109,18 +109,19 @@ def _skip(*_):
 def _type_factory(
     data_file: str,
     data_mapping: tuple[tuple[str, dict], ...],
-    row_index=True,
+    index_column="BaseItemType",
+    row_index=None,
     function=None,
     fail_condition=False,
     skip_warning=False,
-    index_column="BaseItemType",
 ):
-    def func(self, infobox, base_item_type):
+    def func(self, infobox, base_item_type, extended_type=None):
         if data_file == "BaseItemTypes.dat64":
             data = base_item_type
         else:
             file: DatReader = self.rr[data_file]
-            idx = base_item_type.rowid if row_index else base_item_type["Id"]
+            data_type = extended_type or base_item_type
+            idx = data_type[row_index] if row_index else data_type.rowid
 
             if index_column not in file.index:
                 file.build_index(index_column)
@@ -1555,7 +1556,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         fail_condition=True,
     )
 
@@ -1613,7 +1613,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
     )
 
     _type_shield = _type_factory(
@@ -1626,7 +1625,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
     )
 
     def _apply_flask_buffs(self, infobox, base_item_type, flasks):
@@ -1679,13 +1677,13 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         function=_apply_flask_buffs,
     )
 
     _type_flask_charges = _type_factory(
         data_file="ComponentCharges.dat64",
         index_column="BaseItemTypesKey",
+        row_index="Id",
         data_mapping=(
             (
                 "MaxCharges",
@@ -1700,7 +1698,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=False,
     )
 
     _type_weapon = _type_factory(
@@ -1748,7 +1745,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
     )
 
     _type_spirit = _type_factory(
@@ -1762,7 +1758,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         fail_condition=True,
     )
 
@@ -1786,7 +1781,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
     )
 
     def _currency_extra(self, infobox, base_item_type, currency):
@@ -1839,7 +1833,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         function=_currency_extra,
         fail_condition=True,
     )
@@ -1855,7 +1848,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         fail_condition=True,
         skip_warning=True,
     )
@@ -1882,7 +1874,6 @@ class ItemsParser(SkillParserShared):
             ),
         ),
         function=_type_map_extra,
-        row_index=True,
     )
 
     def _type_essence_extra(self, infobox, base_item_type, essence):
@@ -1926,7 +1917,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         function=_type_essence_extra,
         fail_condition=True,
         skip_warning=True,
@@ -1950,7 +1940,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         fail_condition=True,
         skip_warning=True,
     )
@@ -1973,7 +1962,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         fail_condition=True,
         skip_warning=True,
     )
@@ -2077,7 +2065,6 @@ class ItemsParser(SkillParserShared):
                 },
             ),
         ),
-        row_index=True,
         function=_type_soulcore_extra,
     )
 
