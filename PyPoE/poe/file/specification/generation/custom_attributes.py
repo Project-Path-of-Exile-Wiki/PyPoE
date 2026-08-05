@@ -49,6 +49,14 @@ custom_attributes = {
             enum="ATTRIBUTES",
         ),
     },
+    "HarvestCraftOptions.dat": {
+        "LifeforceType": CustomizedField(
+            enum="LIFEFORCE_TYPES",
+        ),
+        "GameMode": CustomizedField(
+            enum="GAME_MODES",
+        ),
+    },
     "ItemVisualIdentity.dat": {
         "Composition": CustomizedField(
             enum="ITEM_VISUAL_COMPOSITIONS",

@@ -37,11 +37,11 @@ import re
 from collections import OrderedDict, defaultdict
 from functools import partial
 
+from PyPoE.cli.exporter.wiki import parser
 from PyPoE.cli.exporter.wiki.handler import ExporterHandler, ExporterResult
-from PyPoE.cli.exporter.wiki.parser import BaseParser, TagHandler, strip_keywords
 
 # Self
-from PyPoE.poe.text import parse_description_tags
+from PyPoE.poe import poe1constants as constants
 
 # =============================================================================
 # Globals
@@ -150,7 +150,7 @@ class LuaFormatter:
 # =============================================================================
 
 
-class GenericLuaParser(BaseParser):
+class GenericLuaParser(parser.BaseParser):
     def _copy_from_keys(self, row, keys, out_data=None, index=None, rtr=False):
         copyrow = OrderedDict()
         for k, copy_data in keys:
@@ -185,7 +185,7 @@ class LuaHandler(ExporterHandler):
 
         parser = lua_sub.add_parser(
             "bestiary",
-            help="Extract bestiary information",
+            help="Extract Bestiary data",
         )
         self.add_default_parsers(
             parser=parser,
@@ -195,7 +195,7 @@ class LuaHandler(ExporterHandler):
 
         parser = lua_sub.add_parser(
             "blight",
-            help="Extract blight information",
+            help="Extract Blight data",
         )
         self.add_default_parsers(
             parser=parser,
@@ -205,7 +205,7 @@ class LuaHandler(ExporterHandler):
 
         parser = lua_sub.add_parser(
             "crafting_bench",
-            help="Extract crafting bench information",
+            help="Extract crafting bench data",
         )
         self.add_default_parsers(
             parser=parser,
@@ -215,7 +215,7 @@ class LuaHandler(ExporterHandler):
 
         parser = lua_sub.add_parser(
             "delve",
-            help="Extract delve information",
+            help="Extract Delve data",
         )
         self.add_default_parsers(
             parser=parser,
@@ -225,7 +225,7 @@ class LuaHandler(ExporterHandler):
 
         parser = lua_sub.add_parser(
             "harvest",
-            help="Extract harvest information (not covered by items)",
+            help="Extract Harvest data",
         )
         self.add_default_parsers(
             parser=parser,
@@ -235,7 +235,7 @@ class LuaHandler(ExporterHandler):
 
         parser = lua_sub.add_parser(
             "heist",
-            help="Extract heist information (not covered by items)",
+            help="Extract Heist data",
         )
         self.add_default_parsers(
             parser=parser,
@@ -245,7 +245,7 @@ class LuaHandler(ExporterHandler):
 
         parser = lua_sub.add_parser(
             "monster",
-            help="Extract monster information",
+            help="Extract monster data",
         )
         self.add_default_parsers(
             parser=parser,
@@ -255,7 +255,7 @@ class LuaHandler(ExporterHandler):
 
         parser = lua_sub.add_parser(
             "packs",
-            help="Extract monster pack information",
+            help="Extract monster pack data",
         )
         self.add_default_parsers(
             parser=parser,
@@ -265,7 +265,7 @@ class LuaHandler(ExporterHandler):
 
         parser = lua_sub.add_parser(
             "pantheon",
-            help="Extract pantheon information",
+            help="Extract pantheon data",
         )
         self.add_default_parsers(
             parser=parser,
@@ -275,7 +275,7 @@ class LuaHandler(ExporterHandler):
 
         parser = lua_sub.add_parser(
             "synthesis",
-            help="Extract synthesis information",
+            help="Extract Synthesis data",
         )
         self.add_default_parsers(
             parser=parser,
@@ -285,7 +285,7 @@ class LuaHandler(ExporterHandler):
 
         parser = lua_sub.add_parser(
             "ot",
-            help="Extract .ot file information",
+            help="Extract .ot file data (base stats)",
         )
         self.add_default_parsers(
             parser=parser,
@@ -295,7 +295,7 @@ class LuaHandler(ExporterHandler):
 
         parser = lua_sub.add_parser(
             "minimap",
-            help="Extract minimap icon information",
+            help="Extract minimap icon data",
         )
         self.add_default_parsers(
             parser=parser,
@@ -391,7 +391,7 @@ class OTStatsParser(GenericLuaParser):
                             ("name", data["fn"]),
                             ("id", stat),
                             ("value", value),
-                            ("stat_text", strip_keywords(txt) or ""),
+                            ("stat_text", parser.strip_keywords(txt) or ""),
                         )
                     )
                 )
@@ -896,30 +896,27 @@ class DelveParser(GenericLuaParser):
         return r
 
 
-class HarvestTagHandler(TagHandler):
+class HarvestTagHandler(parser.TagHandler):
+    def __init__(self, rr):
+        super().__init__(rr)
+
+    _basic_handler = parser.TagHandler._basic_handler
+
     tag_handlers = {
-        "white": partial(TagHandler._basic_handler, tid="white"),
-        "craftingred": partial(TagHandler._basic_handler, tid="red"),
-        "craftingblue": partial(TagHandler._basic_handler, tid="blue"),
-        "craftinggreen": partial(TagHandler._basic_handler, tid="green"),
-        "craftingcaster": partial(TagHandler._basic_handler, tid="purple"),
-        "craftingphysical": partial(TagHandler._basic_handler, tid="tan"),
-        "craftingfire": partial(TagHandler._basic_handler, tid="orange"),
-        "craftinglightning": partial(TagHandler._basic_handler, tid="yellow"),
-        "craftingcold": partial(TagHandler._basic_handler, tid="blue"),
-        "craftingchaos": partial(TagHandler._basic_handler, tid="purple"),
-        "unique": partial(TagHandler._basic_handler, tid="orange"),
-        "magic": partial(TagHandler._basic_handler, tid="blue"),
-        "rare": partial(TagHandler._basic_handler, tid="yellow"),
-        "craftingspeed": partial(TagHandler._basic_handler, tid="green"),
-        "craftingattack": partial(TagHandler._basic_handler, tid="white"),
-        "craftinglife": partial(TagHandler._basic_handler, tid="red"),
-        "craftingcrit": partial(TagHandler._basic_handler, tid="blue"),
-        "craftingdefences": partial(TagHandler._basic_handler, tid="white"),
-        "enchanted": partial(TagHandler._basic_handler, tid="white"),
-        "fuchsia": partial(TagHandler._basic_handler, tid="magenta"),
-        "yellow": partial(TagHandler._basic_handler, tid="yellow"),
-        "aqua": partial(TagHandler._basic_handler, tid="cyan"),
+        "white": partial(_basic_handler, tid="white"),
+        "craftingfire": partial(_basic_handler, tid="craftingfire"),
+        "craftingcold": partial(_basic_handler, tid="craftingcold"),
+        "craftinglightning": partial(_basic_handler, tid="craftinglightning"),
+        "craftingphysical": partial(_basic_handler, tid="craftingphysical"),
+        "craftinglife": partial(_basic_handler, tid="craftinglife"),
+        "craftingdefences": partial(_basic_handler, tid="craftingdefences"),
+        "craftingchaos": partial(_basic_handler, tid="craftingchaos"),
+        "craftingattack": partial(_basic_handler, tid="craftingattack"),
+        "craftingcaster": partial(_basic_handler, tid="craftingcaster"),
+        "craftingspeed": partial(_basic_handler, tid="craftingspeed"),
+        "craftingcrit": partial(_basic_handler, tid="craftingcrit"),
+        "rare": partial(_basic_handler, tid="rare"),
+        "enchanted": partial(_basic_handler, tid="enchanted"),
     }
 
 
@@ -938,42 +935,86 @@ class HarvestParser(GenericLuaParser):
         (
             "Text",
             {
-                "key": "text",
+                "key": "effect_html",
             },
         ),
         (
-            "HarvestCraftTiersKey",
+            "Tier",
             {
                 "key": "tier",
                 "value": lambda v: v.rowid,
             },
         ),
-        ("Description", {"key": "effect"}),
-        ("IsEnchant", {"key": "is_enchant"}),
         (
-            "LifeforceCostType",
+            "Description",
             {
-                "key": "cost_lifeforce_type",
+                "key": "effect",
             },
         ),
-        ("LifeforceCost", {"key": "cost_lifeforce"}),
-        ("SacredBlossomCost", {"key": "cost_sacred"}),
-        ("Command", {"key": "command"}),
-        ("Parameters", {"key": "parameters", "value": lambda v: v.split()}),
+        (
+            "IsEnchant",
+            {
+                "key": "is_enchant",
+            },
+        ),
+        (
+            "LifeforceType",
+            {
+                "key": "lifeforce_type",
+                "value": lambda v: v.id,
+            },
+        ),
+        (
+            "LifeforceCost",
+            {
+                "key": "lifeforce_cost",
+            },
+        ),
+        (
+            "SacredCost",
+            {
+                "key": "cost_sacred",
+            },
+        ),
+        (
+            "IsProportionalToStackSize",
+            {
+                "key": "is_proportional_to_stack_size",
+            },
+        ),
+        (
+            "GameMode",
+            {
+                "key": "game_mode",
+            },
+        ),
+        (
+            "RancourCost",
+            {
+                "key": "cost_rancour",
+            },
+        ),
     )
 
     def main(self, parsed_args):
-        tag_handler = HarvestTagHandler(rr=self.rr)
-        harvest_craft_options = []
-
+        harvest_crafting_options = []
         for row in self.rr["HarvestCraftOptions.dat64"]:
-            self._copy_from_keys(row, self._COPY_KEYS_HARVEST_CRAFT_OPTIONS, harvest_craft_options)
-            harvest_craft_options[-1]["text"] = parse_description_tags(
-                harvest_craft_options[-1]["text"]
-            ).handle_tags(tag_handler.tag_handlers)
+            self._copy_from_keys(
+                row, self._COPY_KEYS_HARVEST_CRAFT_OPTIONS, harvest_crafting_options
+            )
+            harvest_crafting_options[-1]["ordinal"] = row.rowid
+            harvest_crafting_options[-1]["effect_html"] = self._format_description_tags(
+                harvest_crafting_options[-1]["effect_html"], HarvestTagHandler(self.rr)
+            )
+            lftype = harvest_crafting_options[-1].pop("lifeforce_type")
+            lfcost = harvest_crafting_options[-1].pop("lifeforce_cost")
+            for v in constants.LIFEFORCE_TYPES:
+                harvest_crafting_options[-1]["cost_%s" % v.name_lower] = (
+                    lfcost if lftype == v.id else 0
+                )
 
         r = ExporterResult()
-        for k in ("harvest_craft_options",):
+        for k in ("harvest_crafting_options",):
             r.add_result(
                 text=LuaFormatter.format_module(locals()[k]),
                 out_file="%s.lua" % k,

@@ -805,6 +805,15 @@ class BaseParser:
     def _format_detailed(self, custom, ingame):
         return self._DETAILED_FORMAT % (custom, ingame)
 
+    def _format_description_tags(self, text, tag_handler=None):
+        tag_handler = tag_handler or TagHandler(self.rr)
+        try:
+            text = parse_description_tags(text).handle_tags(tag_handler.tag_handlers)
+        except KeyError as e:
+            console("An undefined tag was encountered when parsing tags: %s" % e, msg=Msg.error)
+            raise
+        return text
+
     def _write_dds(
         self, data, out_path, parsed_args, process: Callable[[PIL.Image], PIL.Image] = None
     ):

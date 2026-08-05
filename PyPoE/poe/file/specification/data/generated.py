@@ -4527,7 +4527,6 @@ specification = Specification(
                     name="GameMode",
                     type="int",
                     enum="GAME_MODES",
-                    description="0: All, 1: Normal, 2: Ruthless",
                 ),
                 Field(
                     name="FlaskMod",
@@ -15296,6 +15295,7 @@ specification = Specification(
                 Field(
                     name="LifeforceType",
                     type="int",
+                    enum="LIFEFORCE_TYPES",
                 ),
                 Field(
                     name="LifeforceCost",
@@ -15306,7 +15306,7 @@ specification = Specification(
                     type="int",
                 ),
                 Field(
-                    name="Flag0",
+                    name="IsProportionalToStackSize",
                     type="bool",
                 ),
                 Field(
@@ -15315,11 +15315,12 @@ specification = Specification(
                     key="AchievementItems.dat",
                 ),
                 Field(
-                    name="Unknown0",
+                    name="GameMode",
                     type="int",
+                    enum="GAME_MODES",
                 ),
                 Field(
-                    name="Unknown1",
+                    name="RancourCost",
                     type="int",
                 ),
             ),
@@ -25193,7 +25194,6 @@ specification = Specification(
                     name="GameMode",
                     type="int",
                     enum="GAME_MODES",
-                    description="0: All, 1: Normal, 2: Ruthless",
                 ),
                 Field(
                     name="GrantedEffectRuthless",
@@ -29601,6 +29601,69 @@ specification = Specification(
                 ),
             ),
         ),
+        "PassiveSkillTreeGroupBackgroundArt.dat": File(
+            fields=(
+                Field(
+                    name="Unknown0",
+                    type="ref|string",
+                ),
+                Field(
+                    name="Small",
+                    type="ref|string",
+                ),
+                Field(
+                    name="SmallBlank",
+                    type="ref|string",
+                ),
+                Field(
+                    name="Medium",
+                    type="ref|string",
+                ),
+                Field(
+                    name="MediumBlank",
+                    type="ref|string",
+                ),
+                Field(
+                    name="Large",
+                    type="ref|string",
+                ),
+                Field(
+                    name="LargeBlank",
+                    type="ref|string",
+                ),
+            ),
+        ),
+        "PassiveSkillTreeNodeFrameArt.dat": File(
+            fields=(
+                Field(
+                    name="Id",
+                    type="ref|string",
+                    unique=True,
+                ),
+                Field(
+                    name="Normal",
+                    type="ref|string",
+                ),
+                Field(
+                    name="CanAllocate",
+                    type="ref|string",
+                ),
+                Field(
+                    name="Active",
+                    type="ref|string",
+                ),
+                Field(
+                    name="Mask",
+                    type="ref|string",
+                    file_path=True,
+                    file_ext=".dds",
+                ),
+                Field(
+                    name="Header",
+                    type="ref|string",
+                ),
+            ),
+        ),
         "PassiveSkillTreeTutorial.dat": File(
             fields=(
                 Field(
@@ -29655,74 +29718,35 @@ specification = Specification(
                 Field(
                     name="Id",
                     type="ref|string",
-                ),
-                Field(
-                    name="GroupBackgroundSmall",
-                    type="ref|string",
-                ),
-                Field(
-                    name="GroupBackgroundMedium",
-                    type="ref|string",
-                ),
-                Field(
-                    name="GroupBackgroundLarge",
-                    type="ref|string",
+                    unique=True,
                 ),
                 Field(
                     name="Flag0",
                     type="bool",
                 ),
                 Field(
-                    name="PassiveFrameNormal",
-                    type="ref|string",
-                ),
-                Field(
-                    name="NotableFrameNormal",
-                    type="ref|string",
-                ),
-                Field(
-                    name="KeystoneFrameNormal",
-                    type="ref|string",
-                ),
-                Field(
-                    name="PassiveFrameActive",
-                    type="ref|string",
-                ),
-                Field(
-                    name="NotableFrameActive",
-                    type="ref|string",
-                ),
-                Field(
-                    name="KeystoneFrameActive",
-                    type="ref|string",
-                ),
-                Field(
-                    name="PassiveFrameCanAllocate",
-                    type="ref|string",
-                ),
-                Field(
-                    name="NotableFrameCanAllocate",
-                    type="ref|string",
-                ),
-                Field(
-                    name="KeystoneCanAllocate",
-                    type="ref|string",
-                ),
-                Field(
                     name="Ornament",
                     type="ref|string",
                 ),
                 Field(
-                    name="GroupBackgroundSmallBlank",
-                    type="ref|string",
+                    name="BackgroundArt",
+                    type="ref|out",
+                    key="PassiveSkillTreeGroupBackgroundArt.dat",
                 ),
                 Field(
-                    name="GroupBackgroundMediumBlank",
-                    type="ref|string",
+                    name="PassiveFrame",
+                    type="ref|out",
+                    key="PassiveSkillTreeNodeFrameArt.dat",
                 ),
                 Field(
-                    name="GroupBackgroundLargeBlank",
-                    type="ref|string",
+                    name="NotableFrame",
+                    type="ref|out",
+                    key="PassiveSkillTreeNodeFrameArt.dat",
+                ),
+                Field(
+                    name="KeystoneFrame",
+                    type="ref|out",
+                    key="PassiveSkillTreeNodeFrameArt.dat",
                 ),
             ),
         ),

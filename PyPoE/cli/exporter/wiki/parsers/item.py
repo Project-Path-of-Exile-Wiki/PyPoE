@@ -501,7 +501,6 @@ class ItemsParser(parser.BaseParser):
             # =================================================================
             # Currency items
             # =================================================================
-            "Metadata/Items/Currency/CurrencyItemisedProphecy": " (base item)",
             "Metadata/Items/Currency/CurrencySilverCoin": " (Prophecy)",
             "Metadata/Items/Currency/CurrencyAncestralSilverCoin": "",
             "Metadata/Items/Currency/CurrencyAfflictionOrbHardMode": " (generic)",
@@ -1119,6 +1118,7 @@ class ItemsParser(parser.BaseParser):
         # =================================================================
         # Currency items
         # =================================================================
+        "Metadata/Items/Currency/CurrencyItemisedProphecy",
         "Metadata/Items/Currency/CurrencyLabyrinthEnchant",
         "Metadata/Items/Currency/CurrencyIncursionCorrupt1",
         "Metadata/Items/Currency/CurrencyIncursionCorrupt2",
