@@ -166,18 +166,6 @@ class MapsParser(ItemsParser):
             "High": "High Tier",
             "Uber": "Max Tier",
         },
-        "German": {
-            "Low": "Niedrige Stufe",
-            "Mid": "Mittlere Stufe",
-            "High": "Hohe Stufe",
-            "Uber": "Maximale Stufe",
-        },
-        "Russian": {
-            "Low": "низкий уровень",
-            "Mid": "средний уровень",
-            "High": "высокий уровень",
-            "Uber": "максимальный уровень",
-        },
     }
 
     _SKIP_ITEMS_BY_ID = {
