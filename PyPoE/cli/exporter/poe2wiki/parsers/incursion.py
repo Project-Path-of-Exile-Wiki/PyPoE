@@ -184,7 +184,6 @@ class IncursionRoomParser(parser.BaseParser):
 
     _incursion_room_page_name = {
         "English": "incursion room",
-        "Russian": "комната вмешательства",
     }
 
     def by_rowid(self, parsed_args):

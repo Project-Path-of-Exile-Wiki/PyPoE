@@ -81,6 +81,7 @@ __all__ = [
     "ITEM_VISUAL_COMPOSITIONS",
     "GEM_STYLES",
     "CARD_ANIMATED_EFFECTS",
+    "LIFEFORCE_TYPES",
 ]
 
 MOD_MAX_STATS = 8
@@ -897,6 +898,22 @@ class CARD_ANIMATED_EFFECTS(Enum, metaclass=IntEnumMetaOverride):
     BASILISK = (4, "hunter")
     ADJUDICATOR = (5, "warlord")
     ZANA = (6, "zana")
+
+    def __new__(cls, id: int, lower: str):
+        obj = object.__new__(cls)
+        obj._value_ = id
+        obj.id = id
+        obj.name_lower = lower
+        return obj
+
+
+class LIFEFORCE_TYPES(Enum, metaclass=IntEnumMetaOverride):
+    id: int
+    name_lower: str
+
+    WILD = (1, "wild")
+    VIVID = (2, "vivid")
+    PRIMAL = (3, "primal")
 
     def __new__(cls, id: int, lower: str):
         obj = object.__new__(cls)
