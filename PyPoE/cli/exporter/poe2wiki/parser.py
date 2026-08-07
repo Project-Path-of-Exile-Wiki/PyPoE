@@ -790,11 +790,12 @@ class BaseParser:
 
         return rows
 
+    # Format translation result
     def _format_tr(self, tr):
         return make_inter_wiki_links(self._format_lines(tr.lines))
 
     def _format_lines(self, lines):
-        return "<br>".join(lines).replace("\n", "<br>")
+        return "<br>".join(lines).replace("\n", "<br>").replace("\r", "")
 
     def _format_wiki_title(self, title):
         return title.replace("_", "~").replace("~~~", "_~~_~~_")

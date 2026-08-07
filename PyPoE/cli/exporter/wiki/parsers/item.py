@@ -2108,11 +2108,12 @@ class ItemsParser(parser.BaseParser):
 
     def _currency_extra(self, infobox, base_item_type, currency):
         if infobox.get("description"):
-            infobox["description"] = parser.parse_and_handle_description_tags(
-                rr=self.rr,
-                text=infobox["description"],
+            infobox["description"] = parser.process_keywords(
+                "<br>".join(self._format_description_tags(infobox["description"]).splitlines())
             )
-
+            # Incubators have a numerical placeholder
+            if base_item_type["ItemClassesKey"]["Id"] == "IncubatorStackable":
+                infobox["description"] = infobox["description"].replace("{0}", "#")
         return True
 
     _type_currency = _type_factory(
@@ -2428,7 +2429,7 @@ class ItemsParser(parser.BaseParser):
 
         def add_line(text, mod):
             nonlocal out
-            out.append("%s: %s" % (text, "".join(self._get_stats(mod=mod))))
+            out.append("%s: %s" % (text, "<br>".join(self._get_stats(mod=mod))))
 
         item_mod = essence["Display_Items_ModsKey"]
 
@@ -2507,8 +2508,8 @@ class ItemsParser(parser.BaseParser):
                 "Monster_ModsKeys",
                 {
                     "template": "essence_monster_modifier_ids",
-                    "format": lambda v: ", ".join([m["Id"] for m in v]),
                     "condition": lambda v: v,
+                    "format": lambda v: ", ".join([m["Id"] for m in v]),
                 },
             ),
         ),
@@ -2742,9 +2743,8 @@ class ItemsParser(parser.BaseParser):
         if value:
             infobox["heist_target_value"] = value
         if target["FlavourTextKey"]:
-            infobox["flavour_text"] = parser.parse_and_handle_description_tags(
-                rr=self.rr,
-                text=target["FlavourTextKey"]["Text"],
+            infobox["flavour_text"] = "<br>".join(
+                self._format_description_tags(target["FlavourTextKey"]["Text"]).splitlines()
             )
         return True
 
@@ -3333,9 +3333,8 @@ class ItemsParser(parser.BaseParser):
         infobox["size_x"] = base_item_type["Width"]
         infobox["size_y"] = base_item_type["Height"]
         if base_item_type["FlavourTextKey"]:
-            infobox["flavour_text"] = parser.parse_and_handle_description_tags(
-                rr=self.rr,
-                text=base_item_type["FlavourTextKey"]["Text"],
+            infobox["flavour_text"] = "<br>".join(
+                self._format_description_tags(base_item_type["FlavourTextKey"]["Text"]).splitlines()
             )
 
         if base_item_type["ItemClassesKey"]["Id"] not in self._IGNORE_DROP_LEVEL_CLASSES:
