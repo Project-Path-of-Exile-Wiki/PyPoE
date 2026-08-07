@@ -44,8 +44,6 @@ Functions
 .. autofunction:: format_result_rows
 
 .. autofunction:: make_inter_wiki_links
-
-.. autofunction:: parse_and_handle_description_tags
 """
 
 # =============================================================================
@@ -99,7 +97,6 @@ __all__ = [
     "find_template",
     "format_result_rows",
     "make_inter_wiki_links",
-    "parse_and_handle_description_tags",
     "strip_keywords",
     "process_keywords",
     "apply_simple_column_map",
@@ -1619,9 +1616,8 @@ class BaseParser:
         )
         install_data_dependant_quantifiers(self.rr)
         self.tc = TranslationFileCache(path_or_file_system=self.file_system, **self._TC_KWARGS)
-        if self.specification.sequel == 1:
-            for file_name in self._translations:
-                self.tc[file_name]
+        for file_name in self._translations:
+            self.tc[file_name]
 
         self.ot = OTFileCache(
             path_or_file_system=self.file_system,
@@ -1659,11 +1655,12 @@ class BaseParser:
 
         return rows
 
+    # Format translation result
     def _format_tr(self, tr):
         return make_inter_wiki_links(self._format_lines(tr.lines))
 
     def _format_lines(self, lines):
-        return "<br>".join(lines).replace("\n", "<br>")
+        return "<br>".join(lines).replace("\n", "<br>").replace("\r", "")
 
     def _format_wiki_title(self, title):
         return title.replace("_", "~").replace("~~~", "_~~_~~_")
@@ -1945,9 +1942,7 @@ class TagHandler:
             return "[[%s]]" % string
         items = self.rr["BaseItemTypes.dat64"].index["Name"][string]
         if items:
-            if items[0]["ItemClassesKey"]["Name"] == "Maps":
-                string = self._IL_FORMAT % string
-            elif len(items) > 1:
+            if len(items) > 1:
                 return "[[%s]]" % string
             else:
                 string = self._IIL_FORMAT % string
@@ -2288,31 +2283,6 @@ def find_template(wikitext, template_name):
     texts = ["".join(t) for t in texts]
 
     return {"texts": texts, "args": arguments, "kwargs": kw_arguments}
-
-
-def parse_and_handle_description_tags(rr, text):
-    """
-    Parses and handles description texts
-
-    Parameters
-    ----------
-    rr : RelationalReader
-        RelationalReader instance to pass to TagHandler when parsing
-    text : str
-        Text which to parse
-
-    Returns
-    -------
-    str
-        Parsed texts with wiki templates/links
-    """
-    return (
-        parse_description_tags(text)
-        .handle_tags(TagHandler(rr).tag_handlers)
-        .replace("{0}", "#")  # Numerical placeholder
-        .replace("\n", "<br>")
-        .replace("\r", "")
-    )
 
 
 def strip_keywords(text: str):
