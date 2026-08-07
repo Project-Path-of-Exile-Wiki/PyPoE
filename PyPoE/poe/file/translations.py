@@ -1524,7 +1524,9 @@ class TranslationFile(AbstractFileReadOnly):
         # noqa
     }
 
+    # Some stat IDs need to be manually mapped to IDs in ClientStrings.dat
     _CLIENT_STRINGS_LOOKUP = {
+        # PoE 1
         "map_is_uber_map": "ItemPopupUnmodifiableExceptChaosOrbs",
         "local_influence_mod_requires_celestial_boss_presence": "InfluenceStatConditionPresenceCelestialBoss",
         "local_influence_mod_requires_unique_monster_presence": "InfluenceStatConditionPresenceUniqueMonster",
