@@ -872,112 +872,117 @@ class BaseParser:
                 (stat, self._fix_sign(value, mod["Id"], stat)) for stat, value in zip(stats, values)
             )
 
-        result = self.tc[translation_file].get_translation(
-            stats, values, full_result=True, lang=self.lang
+        # Check for hardcoded stat descriptions first
+        hardcoded_result = self.hardcoded.get_translation(
+            stats,
+            values,
+            full_result=True,
+            lang=self.lang,
         )
+        out = [make_inter_wiki_links(line) for line in hardcoded_result.lines]
 
-        if mod and mod["Domain"] == constants.MOD_DOMAIN.MONSTER:
-            default = self.tc["stat_descriptions.txt"].get_translation(
-                result.source_ids, result.source_values, full_result=True, lang=self.lang
-            )
-            temp_ids = []
-            temp_trans = []
-
-            for i, tr in enumerate(default.found):
-                for j, tr2 in enumerate(result.found):
-                    if tr.ids != tr2.ids:
-                        continue
-
-                    r1 = tr.get_language(self.lang).format_string(default.values[i])
-                    r2 = tr2.get_language(self.lang).format_string(result.values[j])
-                    if r1 and r2 and r1[0] != r2[0]:
-                        temp_trans.append(self._format_detailed(r1[0], r2[0]))
-                    elif r2 and r2[0]:
-                        temp_trans.append(self._format_hidden(r2[0]))
-                    temp_ids.append(tr.ids)
-
-                is_missing = False
-                for tid in tr.ids:
-                    if tid in result.missing_ids:
-                        is_missing = True
-                        break
-
-                if not is_missing:
-                    continue
-
-                r1 = tr.get_language(self.lang).format_string(default.values[i])
-                if r1 and r1[0]:
-                    temp_trans.append(self._format_hidden(r1[0]))
-                    temp_ids.append(tr.ids)
-
-                for tid in tr.ids:
-                    try:
-                        i = result.missing_ids.index(tid)
-                    except ValueError:
-                        continue
-                    del result.missing_ids[i]
-                    del result.missing_values[i]
-
-            index = 0
-            for i, tr in enumerate(result.found):
-                try:
-                    index = temp_ids.index(tr.ids)
-                except ValueError:
-                    temp_ids.insert(index, tr.ids)
-                    temp_trans.insert(
-                        index,
-                        make_inter_wiki_links(
-                            tr.get_language(self.lang).format_string(result.values[i])[0]
-                        ),
-                    )
-                else:
-                    pass
-
-            out = temp_trans
-        else:
-            result_lines = result.lines
-            for client_string in result.client_string_formats:
-                format: str = self.rr["ClientStrings.dat64"].index["Id"][client_string]["Text"]
-                # works for now, may need to revisit if different formats are added to _CLIENT_STRINGS_LOOKUP
-                result_lines = (
-                    [format.format(line) for line in result_lines] if result_lines else [format]
-                )
-
-            out = [make_inter_wiki_links(line) for line in result_lines]
-
-        if result.missing_ids:
-            # Check for a hardcoded result first, using result's missing values.
-            hardcoded_result = self.hardcoded.get_translation(
-                result.missing_ids,
-                result.missing_values,
-                full_result=True,
-                lang=self.lang,
-            )
-
-            # Then check for a custom result, using missing values from the hardcoded results.
-            custom_result = self.custom.get_translation(
+        # Next check the game's translation files
+        if hardcoded_result.missing_ids:
+            result = self.tc[translation_file].get_translation(
                 hardcoded_result.missing_ids,
                 hardcoded_result.missing_values,
                 full_result=True,
                 lang=self.lang,
             )
 
-            if custom_result.missing_ids:
-                warnings.warn(
-                    f'Mod {mod["Id"] if mod is not None else "??"}: Missing translations for ids'
-                    f" {custom_result.missing_ids} and values {custom_result.missing_values}",
-                    MissingIdentifierWarning,
+            if mod and mod["Domain"] == constants.MOD_DOMAIN.MONSTER:
+                default = self.tc["stat_descriptions.txt"].get_translation(
+                    result.source_ids, result.source_values, full_result=True, lang=self.lang
+                )
+                temp_ids = []
+                temp_trans = []
+
+                for i, tr in enumerate(default.found):
+                    for j, tr2 in enumerate(result.found):
+                        if tr.ids != tr2.ids:
+                            continue
+
+                        r1 = tr.get_language(self.lang).format_string(default.values[i])
+                        r2 = tr2.get_language(self.lang).format_string(result.values[j])
+                        if r1 and r2 and r1[0] != r2[0]:
+                            temp_trans.append(self._format_detailed(r1[0], r2[0]))
+                        elif r2 and r2[0]:
+                            temp_trans.append(self._format_hidden(r2[0]))
+                        temp_ids.append(tr.ids)
+
+                    is_missing = False
+                    for tid in tr.ids:
+                        if tid in result.missing_ids:
+                            is_missing = True
+                            break
+
+                    if not is_missing:
+                        continue
+
+                    r1 = tr.get_language(self.lang).format_string(default.values[i])
+                    if r1 and r1[0]:
+                        temp_trans.append(self._format_hidden(r1[0]))
+                        temp_ids.append(tr.ids)
+
+                    for tid in tr.ids:
+                        try:
+                            i = result.missing_ids.index(tid)
+                        except ValueError:
+                            continue
+                        del result.missing_ids[i]
+                        del result.missing_values[i]
+
+                index = 0
+                for i, tr in enumerate(result.found):
+                    try:
+                        index = temp_ids.index(tr.ids)
+                    except ValueError:
+                        temp_ids.insert(index, tr.ids)
+                        temp_trans.insert(
+                            index,
+                            make_inter_wiki_links(
+                                tr.get_language(self.lang).format_string(result.values[i])[0]
+                            ),
+                        )
+                    else:
+                        pass
+
+                for line in temp_trans:
+                    if line:
+                        out.append(line)
+            else:
+                result_lines = result.lines
+                for client_string in result.client_string_formats:
+                    format: str = self.rr["ClientStrings.dat64"].index["Id"][client_string]["Text"]
+                    # works for now, may need to revisit if different formats are added to _CLIENT_STRINGS_LOOKUP
+                    result_lines = (
+                        [format.format(line) for line in result_lines] if result_lines else [format]
+                    )
+
+                for line in result_lines:
+                    if line:
+                        out.append(make_inter_wiki_links(line))
+
+            if result.missing_ids:
+                # Then check for a custom result, using missing values from the results
+                custom_result = self.custom.get_translation(
+                    result.missing_ids,
+                    result.missing_values,
+                    full_result=True,
+                    lang=self.lang,
                 )
 
-            # Save hardcoded stat lines normally
-            for line in hardcoded_result.lines:
-                if line:
-                    out.append(make_inter_wiki_links(line))
+                if custom_result.missing_ids:
+                    warnings.warn(
+                        f'Mod {mod["Id"] if mod is not None else "??"}: Missing translations for ids'
+                        f" {custom_result.missing_ids} and values {custom_result.missing_values}",
+                        MissingIdentifierWarning,
+                    )
 
-            # Save custom stat lines with "(hidden)" appended
-            for line in custom_result.lines:
-                if line:
-                    out.append(self._HIDDEN_FORMAT[self.lang] % line)
+                # Save custom stat lines with "(hidden)" appended
+                for line in custom_result.lines:
+                    if line:
+                        out.append(self._HIDDEN_FORMAT[self.lang] % line)
 
         finalout = []
         for line in out:
