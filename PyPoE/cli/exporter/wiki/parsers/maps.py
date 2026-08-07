@@ -330,7 +330,6 @@ class MapsParser(ItemsParser):
                 },
             ),
         ),
-        row_index=True,
         function=_maps_extra,
     )
 
@@ -356,6 +355,7 @@ class MapsParser(ItemsParser):
 
     _type_map_key = _type_factory(
         data_file="MapKeys.dat64",
+        index_column="BaseItemType",
         data_mapping=(
             (
                 "MapTier",
@@ -364,8 +364,6 @@ class MapsParser(ItemsParser):
                 },
             ),
         ),
-        row_index=True,
-        index_column="BaseItemType",
         function=_map_key_extra,
     )
 
