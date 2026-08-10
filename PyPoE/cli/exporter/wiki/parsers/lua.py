@@ -1116,6 +1116,14 @@ class HeistParser(GenericLuaParser):
                 "value": lambda v: v["Id"],
             },
         ),
+        (
+            "Inventory",
+            {
+                "key": "can_equip",
+                "condition": lambda v: v,
+                "value": lambda v: True,
+            },
+        ),
     )
 
     def main(self, parsed_args):

@@ -2727,6 +2727,13 @@ class ItemsParser(parser.BaseParser):
                     "condition": lambda v: v,
                 },
             ),
+            (
+                "ValueMulti",
+                {
+                    "template": "heist_target_value_multi",
+                    "condition": lambda v: v > 0,
+                },
+            ),
         ),
         function=_heist_objective_extra,
         fail_condition=True,
