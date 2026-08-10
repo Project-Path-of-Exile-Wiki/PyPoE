@@ -2726,6 +2726,8 @@ class ItemsParser(parser.BaseParser):
                     "template": "heist_client",
                     "condition": lambda v: v,
                 },
+            ),
+            (
                 "ValueMulti",
                 {
                     "template": "heist_target_value_multi",
