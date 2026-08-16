@@ -31,9 +31,10 @@ See PyPoE/LICENSE
 # Imports
 # =============================================================================
 
-import re
-
 # Python
+import os
+import posixpath
+import re
 from collections import OrderedDict, defaultdict
 from functools import partial
 
@@ -294,6 +295,16 @@ class LuaHandler(ExporterHandler):
         )
 
         parser = lua_sub.add_parser(
+            "mercenaries",
+            help="Extract mercenaries data",
+        )
+        self.add_default_parsers(
+            parser=parser,
+            cls=MercenariesParser,
+            func=MercenariesParser.main,
+        )
+
+        parser = lua_sub.add_parser(
             "minimap",
             help="Extract minimap icon data",
         )
@@ -302,6 +313,10 @@ class LuaHandler(ExporterHandler):
             cls=MinimapIconsParser,
             func=MinimapIconsParser.main,
         )
+
+    def add_default_parsers(self, *args, **kwargs):
+        super().add_default_parsers(*args, **kwargs)
+        self.add_image_arguments(kwargs["parser"])
 
 
 class MinimapIconsParser(GenericLuaParser):
@@ -339,6 +354,7 @@ class MinimapIconsParser(GenericLuaParser):
                         "condition": None,
                     }
                 ],
+                wiki_message="Minimap data exporter",
             )
 
         return r
@@ -405,6 +421,7 @@ class OTStatsParser(GenericLuaParser):
                         "condition": None,
                     }
                 ],
+                wiki_message="OT stats exporter",
             )
 
         return r
@@ -542,6 +559,7 @@ class BestiaryParser(GenericLuaParser):
                         "condition": None,
                     }
                 ],
+                wiki_message="Bestiary data exporter",
             )
 
         return r
@@ -665,6 +683,7 @@ class BlightParser(GenericLuaParser):
                         "condition": None,
                     }
                 ],
+                wiki_message="Blight data exporter",
             )
 
         return r
@@ -891,6 +910,7 @@ class DelveParser(GenericLuaParser):
                         "condition": None,
                     }
                 ],
+                wiki_message="Delve data exporter",
             )
 
         return r
@@ -1024,6 +1044,7 @@ class HarvestParser(GenericLuaParser):
                         "condition": None,
                     }
                 ],
+                wiki_message="Harvest data exporter",
             )
 
         return r
@@ -1047,14 +1068,14 @@ class HeistParser(GenericLuaParser):
             "WorldAreasKeys",
             {
                 "key": "area_ids",
-                "value": lambda v: ",".join([r["Id"] for r in v]),
+                "value": lambda v: ", ".join([r["Id"] for r in v]),
             },
         ),
         (
             "HeistJobsKeys",
             {
                 "key": "job_ids",
-                "value": lambda v: ",".join([r["Id"] for r in v]),
+                "value": lambda v: ", ".join([r["Id"] for r in v]),
             },
         ),
         (
@@ -1120,8 +1141,7 @@ class HeistParser(GenericLuaParser):
             "Inventory",
             {
                 "key": "can_equip",
-                "condition": lambda v: v,
-                "value": lambda v: True,
+                "value": lambda v: bool(v),
             },
         ),
     )
@@ -1177,6 +1197,7 @@ class HeistParser(GenericLuaParser):
                         "condition": None,
                     }
                 ],
+                wiki_message="Heist data exporter",
             )
 
         return r
@@ -1303,6 +1324,7 @@ class PantheonParser(GenericLuaParser):
                         "condition": None,
                     }
                 ],
+                wiki_message="Pantheon data exporter",
             )
 
         return r
@@ -1407,6 +1429,7 @@ class SynthesisParser(GenericLuaParser):
                         "condition": None,
                     }
                 ],
+                wiki_message="Synthesis data exporter",
             )
 
         return r
@@ -1707,6 +1730,7 @@ class MonsterParser(GenericLuaParser):
                         "condition": None,
                     }
                 ],
+                wiki_message="Monster data exporter",
             )
 
         return r
@@ -1901,6 +1925,7 @@ class CraftingBenchParser(GenericLuaParser):
                         "condition": None,
                     }
                 ],
+                wiki_message="Crafting bench data exporter",
             )
 
         return r
@@ -2008,6 +2033,325 @@ class MonsterPackParser(GenericLuaParser):
                         "condition": None,
                     }
                 ],
+                wiki_message="Monster pack data exporter",
+            )
+
+        return r
+
+
+class MercenariesParser(GenericLuaParser):
+    _files = [
+        "MercenaryClasses.datc64",
+        "MercenaryBuilds.datc64",
+        "MercenaryBuildExtraStats.datc64",
+        "MercenarySkills.datc64",
+        "MercenarySupports.datc64",
+    ]
+
+    _COPY_KEYS_CLASSES = (
+        (
+            "Id",
+            {
+                "key": "id",
+            },
+        ),
+        (
+            "HouseName",
+            {
+                "key": "house",
+            },
+        ),
+        (
+            "Attribute",
+            {
+                "key": "attribute",
+                "value": lambda v: v["Id"],
+            },
+        ),
+    )
+
+    _COPY_KEYS_BUILDS = (
+        (
+            "Id",
+            {
+                "key": "id",
+            },
+        ),
+        (
+            "Class",
+            {
+                "key": "class_id",
+                "value": lambda v: v["Id"],
+            },
+        ),
+        (
+            "Skills1",
+            {
+                "key": "primary_skill_ids",
+                "value": lambda v: ", ".join([str(r.rowid) for r in v]),
+            },
+        ),
+        (
+            "Skills2Count",
+            {
+                "key": "secondary_skill_count",
+            },
+        ),
+        (
+            "Skills2",
+            {
+                "key": "secondary_skill_ids",
+                "value": lambda v: ", ".join([str(r.rowid) for r in v]),
+            },
+        ),
+        (
+            "Skills3Count",
+            {
+                "key": "tertiary_skill_count",
+            },
+        ),
+        (
+            "Skills3",
+            {
+                "key": "tertiary_skill_ids",
+                "value": lambda v: ", ".join([str(r.rowid) for r in v]),
+            },
+        ),
+        (
+            "Tags",
+            {
+                "key": "tags",
+                "value": lambda v: ", ".join([r["Id"] for r in v]),
+            },
+        ),
+        (
+            "Name",
+            {
+                "key": "name",
+            },
+        ),
+        (
+            "IsInfamous",
+            {
+                "key": "is_infamous",
+                "value": lambda v: v,
+            },
+        ),
+        (
+            "WieldableTypes",
+            {
+                "key": "weapon_class_ids",
+                "value": lambda v: ", ".join([r["ItemClass"]["Id"] for r in v]),
+            },
+        ),
+        (
+            "ExtraStats",
+            {
+                "key": "build_stat_ids",
+                "value": lambda v: ", ".join([r["Id"] for r in v]),
+            },
+        ),
+    )
+
+    _COPY_KEYS_BUILD_STATS = (
+        (
+            "Id",
+            {
+                "key": "id",
+            },
+        ),
+        (
+            "Stat",
+            {
+                "key": "stat_id",
+                "value": lambda v: v["Id"],
+            },
+        ),
+        (
+            "Value1",
+            {
+                "key": "value1",
+            },
+        ),
+        (
+            "Value2",
+            {
+                "key": "value2",
+            },
+        ),
+        (
+            "Value3",
+            {
+                "key": "value3",
+            },
+        ),
+        (
+            "Category",
+            {
+                "key": "category",
+                "value": lambda v: v["Id"],
+            },
+        ),
+    )
+
+    _COPY_KEYS_SKILLS = (
+        (
+            "GrantedEffect",
+            {
+                "key": "skill_id",
+                "value": lambda v: v["Id"],
+            },
+        ),
+        (
+            "SupportCount",
+            {
+                "key": "support_count",
+                "value": lambda v: v["Id"],
+            },
+        ),
+        (
+            "PossibleSupports",
+            {
+                "key": "support_ids",
+                "value": lambda v: ", ".join([r["Id"] for r in v]),
+            },
+        ),
+        (
+            "Name",
+            {
+                "key": "name",
+            },
+        ),
+        (
+            "Description",
+            {
+                "key": "description",
+            },
+        ),
+        (
+            "SkillFamily",
+            {
+                "key": "family",
+                "value": lambda v: v["Id"],
+            },
+        ),
+        (
+            "HouseIcon",
+            {
+                "key": "icon",
+                "value": lambda v: posixpath.basename(v.replace(".dds", "")),
+            },
+        ),
+    )
+
+    _COPY_KEYS_SUPPORTS = (
+        (
+            "Id",
+            {
+                "key": "id",
+            },
+        ),
+        (
+            "Name",
+            {
+                "key": "name",
+            },
+        ),
+        (
+            "SupportFamily",
+            {
+                "key": "family",
+                "value": lambda v: v["Id"],
+            },
+        ),
+        (
+            "GemIcon",
+            {
+                "key": "icon",
+                "value": lambda v: posixpath.basename(v.replace(".dds", "")),
+            },
+        ),
+        (
+            "Tier",
+            {
+                "key": "tier",
+            },
+        ),
+    )
+
+    def main(self, parsed_args):
+        self._image_init(parsed_args)
+
+        data = {
+            "classes": [],
+            "builds": [],
+            "build_stats": [],
+            "skills": [],
+            "supports": [],
+            "support_stats": [],
+        }
+
+        for row in self.rr["MercenaryClasses.dat64"]:
+            self._copy_from_keys(row, self._COPY_KEYS_CLASSES, data["classes"])
+
+        for row in self.rr["MercenaryBuilds.dat64"]:
+            self._copy_from_keys(row, self._COPY_KEYS_BUILDS, data["builds"])
+
+        for row in self.rr["MercenaryBuildExtraStats.dat64"]:
+            self._copy_from_keys(row, self._COPY_KEYS_BUILD_STATS, data["build_stats"])
+
+        for row in self.rr["MercenarySkills.dat64"]:
+            self._copy_from_keys(row, self._COPY_KEYS_SKILLS, data["skills"])
+            data["skills"][-1]["id"] = row.rowid
+            if parsed_args.store_images:
+                if row["HouseIcon"]:
+                    self._write_dds(
+                        data=self.file_system.get_file(row["HouseIcon"]),
+                        out_path=os.path.join(
+                            self._img_path,
+                            "%s mercenary skill icon.dds" % (data["skills"][-1]["icon"]),
+                        ),
+                        parsed_args=parsed_args,
+                    )
+
+        for row in self.rr["MercenarySupports.dat64"]:
+            self._copy_from_keys(row, self._COPY_KEYS_SUPPORTS, data["supports"])
+            stats = [r["Id"] for r in row["Stats"]]
+            for i, stat_id in enumerate(stats):
+                stat_data = {
+                    "support_id": row["Id"],
+                    "stat_id": stat_id,
+                    "value": row["StatValues"][i],
+                }
+                data["support_stats"].append(stat_data)
+            data["supports"][-1]["stat_text"] = self._format_tr(
+                self.tc["mercenary_support_stat_descriptions.txt"].get_translation(
+                    stats, [int(v) for v in row["StatValues"]], full_result=True
+                )
+            )
+            if parsed_args.store_images:
+                if row["GemIcon"]:
+                    self._write_dds(
+                        data=self.file_system.get_file(row["GemIcon"]),
+                        out_path=os.path.join(
+                            self._img_path,
+                            "%s mercenary support icon.dds" % (data["supports"][-1]["icon"]),
+                        ),
+                        parsed_args=parsed_args,
+                    )
+
+        r = ExporterResult()
+        for key, data in data.items():
+            r.add_result(
+                text=LuaFormatter.format_module(data),
+                out_file="%s.lua" % key,
+                wiki_page=[
+                    {
+                        "page": "Module:Mercenaries/%s" % key,
+                        "condition": None,
+                    }
+                ],
+                wiki_message="Mercenaries data exporter",
             )
 
         return r
