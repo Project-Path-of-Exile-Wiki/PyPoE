@@ -1587,7 +1587,7 @@ class ItemsParser(SkillParserShared):
                 {
                     "template": "movement_speed",
                     "condition": lambda v: v != 0,
-                    "format": lambda v: "{0:n}".format(v / 100),
+                    "format": lambda v: f"{v / 100:n}",
                 },
             ),
         ),
@@ -1643,14 +1643,14 @@ class ItemsParser(SkillParserShared):
                 {
                     "template": "flask_duration",
                     "condition": lambda v: v > 0,
-                    "format": lambda v: "{0:n}".format(v / 10),
+                    "format": lambda v: f"{v / 10:n}",
                 },
             ),
             (
                 "BuffDefinition",
                 {
                     "template": "buff_id",
-                    "condition": lambda v: v is not None,
+                    "condition": lambda v: v,
                     "format": lambda v: v["Id"],
                 },
             ),
@@ -1685,14 +1685,14 @@ class ItemsParser(SkillParserShared):
                 "Critical",
                 {
                     "template": "critical_strike_chance",
-                    "format": lambda v: "{0:n}".format(v / 100),
+                    "format": lambda v: f"{v / 100:n}",
                 },
             ),
             (
                 "Speed",
                 {
                     "template": "attack_speed",
-                    "format": lambda v: "{0:n}".format(round(1000 / v, 2)),
+                    "format": lambda v: f"{round(1000 / v, 2):n}",
                 },
             ),
             (
@@ -1711,7 +1711,7 @@ class ItemsParser(SkillParserShared):
                 "RangeMax",
                 {
                     "template": "weapon_range",
-                    "format": lambda v: "{0:n}".format(v / 10),
+                    "format": lambda v: f"{v / 10:n}",
                 },
             ),
             (
@@ -1719,7 +1719,7 @@ class ItemsParser(SkillParserShared):
                 {
                     "template": "reload_time",
                     "condition": lambda v: v > 0,
-                    "format": lambda v: "{0:n}".format(v / 1000),
+                    "format": lambda v: f"{v / 1000:n}",
                 },
             ),
         ),
@@ -2018,7 +2018,7 @@ class ItemsParser(SkillParserShared):
                 "Limit",
                 {
                     "template": "augment_limit",
-                    "condition": lambda v: v is not None,
+                    "condition": lambda v: v,
                     "format": lambda v: (
                         parser.process_keywords(v["Text"].format(v["Limit"]))
                         if v["Text"]
@@ -2030,7 +2030,7 @@ class ItemsParser(SkillParserShared):
                 "Type",
                 {
                     "template": "augment_type_id",
-                    "conditon": lambda v: v is not None,
+                    "conditon": lambda v: v,
                     "format": lambda v: v["Id"],
                 },
             ),
@@ -2038,7 +2038,7 @@ class ItemsParser(SkillParserShared):
                 "Type",
                 {
                     "template": "augment_type",
-                    "conditon": lambda v: v is not None,
+                    "conditon": lambda v: v,
                     "format": lambda v: parser.strip_keywords(v["Name"]),
                 },
             ),
