@@ -190,6 +190,7 @@ exporting modules && {
     pypoe_exporter $QUIET $WIKI lua delve "${ARGS[@]}" "$@"
     pypoe_exporter $QUIET $WIKI lua harvest "${ARGS[@]}" "$@"
     pypoe_exporter $QUIET $WIKI lua heist "${ARGS[@]}" "$@"
+    pypoe_exporter $QUIET $WIKI lua mercenaries "${ARGS[@]}" "$@"
     pypoe_exporter $QUIET $WIKI lua monster "${ARGS[@]}" "$@"
     pypoe_exporter $QUIET $WIKI lua pantheon "${ARGS[@]}" "$@"
     pypoe_exporter $QUIET $WIKI lua synthesis "${ARGS[@]}" "$@"

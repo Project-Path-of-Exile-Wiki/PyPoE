@@ -22709,15 +22709,15 @@ specification = Specification(
                     key="Stats.dat",
                 ),
                 Field(
-                    name="Unknown0",
+                    name="Value1",
                     type="int",
                 ),
                 Field(
-                    name="Unknown1",
+                    name="Value2",
                     type="int",
                 ),
                 Field(
-                    name="Unknown2",
+                    name="Value3",
                     type="int",
                 ),
                 Field(
@@ -22769,7 +22769,16 @@ specification = Specification(
                     key="MercenaryClasses.dat",
                 ),
                 Field(
-                    name="Skill1",
+                    name="Skills1",
+                    type="ref|list|ref|out",
+                    key="MercenarySkills.dat",
+                ),
+                Field(
+                    name="Skills2Count",
+                    type="int",
+                ),
+                Field(
+                    name="Skills2",
                     type="ref|list|ref|out",
                     key="MercenarySkills.dat",
                 ),
@@ -22778,24 +22787,15 @@ specification = Specification(
                     type="int",
                 ),
                 Field(
-                    name="Skill2",
-                    type="ref|list|ref|out",
-                    key="MercenarySkills.dat",
-                ),
-                Field(
-                    name="Unknown1",
-                    type="int",
-                ),
-                Field(
                     name="Data0",
                     type="ref|list|byte",
                 ),
                 Field(
-                    name="Unknown2",
+                    name="Skills3Count",
                     type="int",
                 ),
                 Field(
-                    name="Skill3",
+                    name="Skills3",
                     type="ref|list|ref|out",
                     key="MercenarySkills.dat",
                 ),
@@ -22817,15 +22817,15 @@ specification = Specification(
                     type="ushort",
                 ),
                 Field(
-                    name="BuildName",
+                    name="Name",
                     type="ref|string",
                 ),
                 Field(
-                    name="Unknown3",
+                    name="Unknown1",
                     type="int",
                 ),
                 Field(
-                    name="Infamous",
+                    name="IsInfamous",
                     type="bool",
                 ),
                 Field(
@@ -22834,7 +22834,7 @@ specification = Specification(
                     key="MercenarySkills.dat",
                 ),
                 Field(
-                    name="Unknown4",
+                    name="Unknown2",
                     type="ref|string",
                 ),
                 Field(
@@ -22852,7 +22852,7 @@ specification = Specification(
                     key="MercenaryWieldableTypes.dat",
                 ),
                 Field(
-                    name="BuildStats",
+                    name="ExtraStats",
                     type="ref|list|ref|out",
                     key="MercenaryBuildExtraStats.dat",
                 ),
@@ -22974,22 +22974,6 @@ specification = Specification(
                 ),
             ),
         ),
-        "MercenaryRenownLevels.dat": File(
-            fields=(
-                Field(
-                    name="RenownLevel",
-                    type="int",
-                ),
-                Field(
-                    name="Unknown0",
-                    type="int",
-                ),
-                Field(
-                    name="Unknown1",
-                    type="int",
-                ),
-            ),
-        ),
         "MercenarySkillFamilies.dat": File(
             fields=(
                 Field(
@@ -23001,7 +22985,7 @@ specification = Specification(
         "MercenarySkills.dat": File(
             fields=(
                 Field(
-                    name="Id",
+                    name="GrantedEffect",
                     type="ref|out",
                     key="GrantedEffects.dat",
                 ),
@@ -23016,7 +23000,7 @@ specification = Specification(
                     key="MercenarySupports.dat",
                 ),
                 Field(
-                    name="SecondaryGrantedEffect",
+                    name="EncounterGrantedEffect",
                     type="ref|out",
                     key="GrantedEffects.dat",
                 ),
@@ -23029,11 +23013,11 @@ specification = Specification(
                     type="ref|string",
                 ),
                 Field(
-                    name="Unknown0",
+                    name="RequiredLevel",
                     type="int",
                 ),
                 Field(
-                    name="Unknown1",
+                    name="Unknown0",
                     type="int",
                 ),
                 Field(
@@ -23086,7 +23070,7 @@ specification = Specification(
                     type="int",
                 ),
                 Field(
-                    name="Stat",
+                    name="Stats",
                     type="ref|list|ref|out",
                     key="Stats.dat",
                 ),
@@ -23112,7 +23096,7 @@ specification = Specification(
                     type="ref|string",
                 ),
                 Field(
-                    name="Variant",
+                    name="Tier",
                     type="int",
                 ),
                 Field(

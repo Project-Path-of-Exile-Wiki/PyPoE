@@ -213,6 +213,8 @@ class WikiCondition(parser.WikiCondition):
         # Version information
         "release_version",
         "removal_version",
+        # Heist
+        "heist_target",
         # Sentinels
         "sentinel_monster",
         "sentinel_monster_level",
@@ -2008,14 +2010,14 @@ class ItemsParser(parser.BaseParser):
                 {
                     "template": "flask_duration",
                     "condition": lambda v: v > 0,
-                    "format": lambda v: "{0:n}".format(v / 10),
+                    "format": lambda v: f"{v / 10:n}",
                 },
             ),
             (
                 "BuffDefinitionsKey",
                 {
                     "template": "buff_id",
-                    "condition": lambda v: v is not None,
+                    "condition": lambda v: v,
                     "format": lambda v: v["Id"],
                 },
             ),
@@ -2049,14 +2051,14 @@ class ItemsParser(parser.BaseParser):
                 "Critical",
                 {
                     "template": "critical_strike_chance",
-                    "format": lambda v: "{0:n}".format(v / 100),
+                    "format": lambda v: f"{v / 100:n}",
                 },
             ),
             (
                 "Speed",
                 {
                     "template": "attack_speed",
-                    "format": lambda v: "{0:n}".format(round(1000 / v, 2)),
+                    "format": lambda v: f"{round(1000 / v, 2):n}",
                 },
             ),
             (
@@ -2075,7 +2077,7 @@ class ItemsParser(parser.BaseParser):
                 "RangeMax",
                 {
                     "template": "weapon_range",
-                    "format": lambda v: "{0:n}".format(v / 10),
+                    "format": lambda v: f"{v / 10:n}",
                 },
             ),
         ),
@@ -2732,6 +2734,7 @@ class ItemsParser(parser.BaseParser):
                 {
                     "template": "heist_target_value_multi",
                     "condition": lambda v: v > 0,
+                    "format": lambda v: f"{v:n}",
                 },
             ),
         ),
@@ -2864,16 +2867,16 @@ class ItemsParser(parser.BaseParser):
                 "DebuffInterval",
                 {
                     "template": "tincture_mana_burn",
-                    "format": lambda v: v / 1000,
                     "condition": lambda v: v,
+                    "format": lambda v: f"{v / 1000:n}",
                 },
             ),
             (
                 "Cooldown",
                 {
                     "template": "tincture_cooldown",
-                    "format": lambda v: f"{v / 1000:g}",
                     "condition": lambda v: v,
+                    "format": lambda v: f"{v / 1000:n}",
                 },
             ),
         ),
