@@ -637,6 +637,8 @@ class MOD_DOMAIN(IntEnumOverride):
     DEEPWATER_BORDER = 40
     MERCENARY = 41
     DUCAT_CRAFTED = 42
+    HARVEST_TREE = 43
+    LEGION_MONOLITH = 44
 
 
 class MOD_GENERATION_TYPE(IntEnumOverride):
