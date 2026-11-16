@@ -509,7 +509,7 @@ class PassiveSkillParser(BasePassiveSkillParser):
                         self._get_stats(
                             stat_ids,
                             values,
-                            translation_file="passive_skill_aura_stat_descriptions.txt",
+                            translation_file="passive_skill_aura_stat_descriptions.csd",
                         )
                     )
 
@@ -712,6 +712,6 @@ def get_translation_file(passive_id: str):
     passive_id: the Id of the passive skill
     """
     if passive_id.startswith("atlas"):
-        return "atlas_stat_descriptions.txt"
+        return "atlas_stat_descriptions.csd"
     else:
-        return "passive_skill_stat_descriptions.txt"
+        return "passive_skill_stat_descriptions.csd"

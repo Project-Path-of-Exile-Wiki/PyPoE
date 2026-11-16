@@ -314,10 +314,10 @@ class ItemsParser(parser.BaseParser):
 
     # Core translations we need
     _translations = [
-        "stat_descriptions.txt",
-        "gem_stat_descriptions.txt",
-        "skill_stat_descriptions.txt",
-        "active_skill_gem_stat_descriptions.txt",
+        "stat_descriptions.csd",
+        "gem_stat_descriptions.csd",
+        "skill_stat_descriptions.csd",
+        "active_skill_gem_stat_descriptions.csd",
     ]
 
     # Item inventory icons are scaled down so that this is the largest dimension
@@ -1647,7 +1647,7 @@ class ItemsParser(parser.BaseParser):
             if override["MaxAdjacent"]:
                 infobox["tattoo_max_adjacent"] = override["MaxAdjacent"]
             stats = [s["Id"] for s in override["Stats"]]
-            tr = self.tc["stat_descriptions.txt"].get_translation(
+            tr = self.tc["stat_descriptions.csd"].get_translation(
                 stats,
                 override["StatValues"],
                 full_result=True,
@@ -1977,7 +1977,7 @@ class ItemsParser(parser.BaseParser):
             values = flasks["BuffStatValues"] + [
                 1 for _ in flasks["BuffDefinitionsKey"]["Binary_StatsKeys"]
             ]
-            tr = self.tc["stat_descriptions.txt"].get_translation(
+            tr = self.tc["stat_descriptions.csd"].get_translation(
                 stats,
                 values,
                 full_result=True,

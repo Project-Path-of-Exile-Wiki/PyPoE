@@ -406,7 +406,7 @@ class TestTranslationResults:
     """live_functionality_tests = (
         # File, Tags, values, result, message, trr, reverse keyargs
         (
-            'skill_stat_descriptions.txt',
+            'skill_stat_descriptions.csd',
             ['base_number_of_projectiles_in_spiral_nova',
              'projectile_spiral_nova_angle'],
             [32, -720],

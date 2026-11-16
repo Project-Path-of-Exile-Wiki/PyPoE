@@ -306,7 +306,7 @@ class OTStatsParser(GenericLuaParser):
                     continue
 
                 txt = self._format_tr(
-                    self.tc["stat_descriptions.txt"].get_translation(
+                    self.tc["stat_descriptions.csd"].get_translation(
                         tags=[
                             stat,
                         ],

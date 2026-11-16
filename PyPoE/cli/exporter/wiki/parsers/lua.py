@@ -399,7 +399,7 @@ class OTStatsParser(GenericLuaParser):
                     continue
 
                 txt = self._format_tr(
-                    self.tc["stat_descriptions.txt"].get_translation(
+                    self.tc["stat_descriptions.csd"].get_translation(
                         tags=[
                             stat,
                         ],
@@ -1199,7 +1199,7 @@ class HeistParser(GenericLuaParser):
 
             if stats:
                 row_data["stat_text"] = self._format_tr(
-                    self.tc["stat_descriptions.txt"].get_translation(
+                    self.tc["stat_descriptions.csd"].get_translation(
                         stats, [int(v) for v in row["StatValues"]], full_result=True
                     )
                 )
@@ -1293,7 +1293,7 @@ class PantheonParser(GenericLuaParser):
                 row_data["ordinal"] = i
                 row_data["name"] = row["GodName%s" % i]
                 row_data["stat_text"] = self._format_tr(
-                    self.tc["stat_descriptions.txt"].get_translation(
+                    self.tc["stat_descriptions.csd"].get_translation(
                         stats, [int(v) for v in values], full_result=True
                     )
                 )
@@ -2326,7 +2326,7 @@ class MercenariesParser(GenericLuaParser):
 
             if stats:
                 row_data["stat_text"] = self._format_tr(
-                    self.tc["mercenary_support_stat_descriptions.txt"].get_translation(
+                    self.tc["mercenary_support_stat_descriptions.csd"].get_translation(
                         stats, [int(v) for v in row["StatValues"]], full_result=True
                     )
                 )

@@ -637,6 +637,8 @@ class MOD_DOMAIN(IntEnumOverride):
     DEEPWATER_BORDER = 40
     MERCENARY = 41
     DUCAT_CRAFTED = 42
+    HARVEST_TREE = 43
+    LEGION_MONOLITH = 44
 
 
 class MOD_GENERATION_TYPE(IntEnumOverride):
@@ -731,56 +733,56 @@ class MOD_GENERATION_TYPE(IntEnumOverride):
 # translation files for specific generation types, or a default translation file.
 MOD_TRANSLATION_MAP = {
     MOD_DOMAIN.MONSTER: {
-        "default": "monster_stat_descriptions.txt",
+        "default": "monster_stat_descriptions.csd",
     },
     MOD_DOMAIN.CHEST: {
-        "default": "chest_stat_descriptions.txt",
+        "default": "chest_stat_descriptions.csd",
     },
     MOD_DOMAIN.AREA: {
-        "default": "map_stat_descriptions.txt",
+        "default": "map_stat_descriptions.csd",
     },
     MOD_DOMAIN.ATLAS: {
-        "default": "atlas_stat_descriptions.txt",
+        "default": "atlas_stat_descriptions.csd",
     },
     MOD_DOMAIN.LEAGUESTONE: {
-        "default": "leaguestone_stat_descriptions.txt",
+        "default": "leaguestone_stat_descriptions.csd",
     },
     MOD_DOMAIN.DELVE_AREA: {
-        "default": "map_stat_descriptions.txt",
+        "default": "map_stat_descriptions.csd",
     },
     MOD_DOMAIN.MAP_DEVICE: {
-        "default": "map_stat_descriptions.txt",
+        "default": "map_stat_descriptions.csd",
     },
     MOD_DOMAIN.CRAFTED: {
-        "default": "map_stat_descriptions.txt",
+        "default": "map_stat_descriptions.csd",
     },
     MOD_DOMAIN.HEIST_NPC: {
-        "default": "heist_equipment_stat_descriptions.txt",
+        "default": "heist_equipment_stat_descriptions.csd",
     },
     MOD_DOMAIN.PRIMORDIAL_ALTAR: {
-        "default": "primordial_altar_stat_descriptions.txt",
+        "default": "primordial_altar_stat_descriptions.csd",
     },
     MOD_DOMAIN.SENTINEL: {
-        "default": "sentinel_stat_descriptions.txt",
+        "default": "sentinel_stat_descriptions.csd",
     },
     MOD_DOMAIN.TEMPLAR_RELIC: {
-        "default": "sanctum_relic_stat_descriptions.txt",
+        "default": "sanctum_relic_stat_descriptions.csd",
     },
     MOD_DOMAIN.TINCTURE: {
-        "default": "tincture_stat_descriptions.txt",
+        "default": "tincture_stat_descriptions.csd",
     },
     MOD_DOMAIN.MAP_RELIC: {
-        "default": "atlas_relic_stat_descriptions.txt",
+        "default": "atlas_relic_stat_descriptions.csd",
     },
     MOD_DOMAIN.BREQUEL_GRAFT: {
-        "default": "graft_stat_descriptions.txt",
+        "default": "graft_stat_descriptions.csd",
     },
     MOD_DOMAIN.DEEPWATER_CHART: {
-        MOD_GENERATION_TYPE.DEEPWATER_VOYAGE_PLANNER: "deepwater_implicit_stat_descriptions.txt",
-        "default": "map_stat_descriptions.txt",
+        MOD_GENERATION_TYPE.DEEPWATER_VOYAGE_PLANNER: "deepwater_implicit_stat_descriptions.csd",
+        "default": "map_stat_descriptions.csd",
     },
     MOD_DOMAIN.DEEPWATER_BORDER: {
-        "default": "deepwater_implicit_stat_descriptions.txt",
+        "default": "deepwater_implicit_stat_descriptions.csd",
     },
 }
 

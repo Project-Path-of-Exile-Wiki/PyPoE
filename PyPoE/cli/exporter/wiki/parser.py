@@ -1757,7 +1757,7 @@ class BaseParser:
             )
 
             if mod and mod["Domain"] == constants.MOD_DOMAIN.MONSTER:
-                default = self.tc["stat_descriptions.txt"].get_translation(
+                default = self.tc["stat_descriptions.csd"].get_translation(
                     result.source_ids, result.source_values, full_result=True, lang=self.lang
                 )
                 temp_ids = []

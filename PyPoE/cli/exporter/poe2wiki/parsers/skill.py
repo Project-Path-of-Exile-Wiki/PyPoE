@@ -480,7 +480,7 @@ class SkillParserShared(parser.BaseParser):
                     parsed_args=parsed_args,
                 )
         else:
-            tf = self.tc["gem_stat_descriptions.txt"]
+            tf = self.tc["gem_stat_descriptions.csd"]
 
         # reformat the datas we need
         level_data = []

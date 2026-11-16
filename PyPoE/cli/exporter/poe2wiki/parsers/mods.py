@@ -124,7 +124,7 @@ class ModParser(parser.BaseParser):
 
     # Load translations in advance
     _translations = [
-        "map_stat_descriptions.txt",
+        "map_stat_descriptions.csd",
     ]
 
     _mod_column_index_filter = partialmethod(
