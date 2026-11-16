@@ -243,7 +243,7 @@ class MasteryParser(parser.BaseParser):
 
                 infobox[f"effect{effect_index}_stat_text"] = "<br>".join(
                     self._get_stats(
-                        stat_ids, values, translation_file="passive_skill_stat_descriptions.txt"
+                        stat_ids, values, translation_file="passive_skill_stat_descriptions.csd"
                     )
                 )
 

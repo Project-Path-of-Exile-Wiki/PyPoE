@@ -340,10 +340,10 @@ class ItemsParser(SkillParserShared):
 
     # Core translations we need
     _translations = [
-        "stat_descriptions.txt",
-        "gem_stat_descriptions.txt",
-        "skill_stat_descriptions.txt",
-        "active_skill_gem_stat_descriptions.txt",
+        "stat_descriptions.csd",
+        "gem_stat_descriptions.csd",
+        "skill_stat_descriptions.csd",
+        "active_skill_gem_stat_descriptions.csd",
     ]
 
     _item_column_index_filter = partialmethod(
@@ -1611,7 +1611,7 @@ class ItemsParser(SkillParserShared):
                 s["Id"] for s in buff["BuffDefinition"]["GrantedFlags"]
             ]
             values = buff["StatValues"] + [1 for _ in buff["BuffDefinition"]["GrantedFlags"]]
-            tr = self.tc["stat_descriptions.txt"].get_translation(
+            tr = self.tc["stat_descriptions.csd"].get_translation(
                 stats,
                 values,
                 full_result=True,
@@ -1971,7 +1971,7 @@ class ItemsParser(SkillParserShared):
                 values = values
                 return "<br>".join(
                     self._get_stats(
-                        stats=stats, values=values, translation_file="stat_descriptions.txt"
+                        stats=stats, values=values, translation_file="stat_descriptions.csd"
                     )
                 )
 

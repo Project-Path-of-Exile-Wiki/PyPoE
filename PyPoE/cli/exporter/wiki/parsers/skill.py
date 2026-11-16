@@ -500,9 +500,9 @@ class SkillParserShared(parser.BaseParser):
                 tf = self.tc[self.skill_stat_filter.skills[base_skill_id].translation_file_path]
             except KeyError as e:
                 warnings.warn("Missing active skill in stat files: %s" % e.args[0])
-                tf = self.tc["skill_stat_descriptions.txt"]
+                tf = self.tc["skill_stat_descriptions.csd"]
         else:
-            tf = self.tc["gem_stat_descriptions.txt"]
+            tf = self.tc["gem_stat_descriptions.csd"]
 
         # reformat the datas we need
         level_data = []

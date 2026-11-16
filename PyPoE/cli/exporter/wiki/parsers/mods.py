@@ -145,7 +145,7 @@ class ModParser(parser.BaseParser):
 
     # Load translations in advance
     _translations = [
-        "map_stat_descriptions.txt",
+        "map_stat_descriptions.csd",
     ]
 
     _mod_column_index_filter = partialmethod(
@@ -376,7 +376,7 @@ class ModParser(parser.BaseParser):
 
     @deprecated(message="Will be done in-wiki in the future - non functional")
     def tempest(self, parsed_args):
-        tf = self.tc["map_stat_descriptions.txt"]
+        tf = self.tc["map_stat_descriptions.csd"]
         data = []
         for mod in self.rr["Mods.dat64"]:
             # Is it a tempest mod?

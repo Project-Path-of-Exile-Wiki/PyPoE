@@ -19,7 +19,7 @@ Description
 
 Utilities for parsing and using GGG translations.
 
-The translation GGG provides are generally suffixed by _descriptions.txt and
+The translation GGG provides are generally suffixed by _descriptions.csd and
 can be found in the MetaData/StatDescriptions/ folder.
 
 Agreement
@@ -1503,7 +1503,7 @@ class TranslationFile(AbstractFileReadOnly):
 
     Translation files can be found in the following folder in the content.ggpk:
 
-    Metadata/StatDescriptions/xxx_descriptions.txt
+    Metadata/StatDescriptions/xxx_descriptions.csd
 
     Attributes
     ----------
@@ -2152,8 +2152,8 @@ class TranslationFileCache(AbstractFileCache[TranslationFile]):
         added Metadata automatically.
 
         That means the following is equivalent:
-        obj['stat_descriptions.txt']
-        obj.get_file('Metadata/StatDescriptions/stat_descriptions.txt')
+        obj['stat_descriptions.csd']
+        obj.get_file('Metadata/StatDescriptions/stat_descriptions.csd')
 
         Parameters
         ----------
@@ -2201,9 +2201,6 @@ class TranslationFileCache(AbstractFileCache[TranslationFile]):
         TranslationFile
             the specified TranslationFile
         """
-
-        if self.sequel == 2:
-            file_name = file_name.replace(".txt", ".csd")
 
         if file_name not in self.files:
             tf = self._create_instance(file_name=file_name)

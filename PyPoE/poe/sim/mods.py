@@ -242,7 +242,7 @@ def get_mod_translation_file(mod, constants) -> str:
             return mtmap[domain][generation_type]
         if "default" in mtmap[domain]:
             return mtmap[domain]["default"]
-    return "stat_descriptions.txt"
+    return "stat_descriptions.csd"
 
 
 def get_translation(mod, translation_cache, translation_file=None, **kwargs):
