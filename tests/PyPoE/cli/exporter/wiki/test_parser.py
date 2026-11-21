@@ -41,7 +41,7 @@ from PyPoE.cli.exporter import config
 from PyPoE.cli.exporter.wiki import parser
 
 # self
-from PyPoE.poe import constants
+from PyPoE.poe import poe1constants as constants
 from PyPoE.poe.text import parse_description_tags
 
 # =============================================================================
@@ -70,7 +70,7 @@ def tag_handler_obj(rr):
 def divination_card_texts(rr):
     return [
         parse_description_tags(row["Description"])
-        for row in rr["CurrencyItems.dat"]
+        for row in rr["CurrencyItems.dat64"]
         if row["BaseItemTypesKey"]["ItemClassesKey"]["Name"] == "Divination Card"
     ]
 
@@ -78,6 +78,24 @@ def divination_card_texts(rr):
 # =============================================================================
 # Tests
 # =============================================================================
+
+# Mod ID, expected results
+mdata = (
+    (
+        "Strength1",
+        [
+            "+(8-12) to [[Strength]]",
+        ],
+    ),
+    #
+    (
+        "MonsterCriticals1",
+        [
+            "300% increased Global [[Critical Strike Chance]] (Hidden)",
+            "+65% to Global [[Critical Strike Multiplier]] (Hidden)",
+        ],
+    ),
+)
 
 # List of strings that are prone to breaking and difficult
 iwdata = (
@@ -197,29 +215,9 @@ This item can be obtained by using a {{il|Divine Vessel}} with a {{il|Beach Map}
 
 
 class TestBaseParser:
-    data = (
-        # Mod ID, expected results
-        (
-            "Strength1",
-            [
-                "+(8-12) to [[Strength]]",
-            ],
-        ),
-        (
-            "MonsterCriticals1",
-            [
-                (
-                    '<abbr title="Powerful Crits">300% increased Global [[Critical Strike'
-                    " Chance]]</abbr>"
-                ),
-                "+65% to Global [[Critical Strike Multiplier]] (Hidden)",
-            ],
-        ),
-    )
-
-    @pytest.mark.parametrize("mod_id,result", data)
+    @pytest.mark.parametrize("mod_id,result", mdata)
     def test_get_stats(self, parserobj, mod_id, result):
-        mod = parserobj.rr["Mods.dat"].index["Id"][mod_id]
+        mod = parserobj.rr["Mods.dat64"].index["Id"][mod_id]
 
         stats = []
         values = []

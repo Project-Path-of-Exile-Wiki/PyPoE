@@ -54,6 +54,7 @@ _argparse_versions = {
     "stable": VERSION.STABLE,
     "beta": VERSION.BETA,
     "alpha": VERSION.ALPHA,
+    "generated": VERSION.GENERATED,
 }
 
 # =============================================================================
@@ -79,7 +80,7 @@ def pytest_addoption(parser):
         "--poe-version",
         action="store",
         choices=list(_argparse_versions.keys()),
-        default="stable",
+        default="generated",
         help=(
             "Target version of path of exile; different version will test "
             "against different specifications."
@@ -143,7 +144,8 @@ def rr(file_system: FileSystem) -> dat.RelationalReader:
         path_or_file_system=file_system,
         read_options={
             # When we use this, speed > dat value features
-            "use_dat_value": False
+            "use_dat_value": False,
+            "x64": True,
         },
         raise_error_on_missing_relation=False,
     )
