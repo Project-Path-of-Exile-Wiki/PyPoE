@@ -148,6 +148,10 @@ class ModParser(parser.BaseParser):
         "map_stat_descriptions.csd",
     ]
 
+    _TC_KWARGS = {
+        "merge_with_custom_file": True,
+    }
+
     _mod_column_index_filter = partialmethod(
         parser.BaseParser._column_index_filter,
         dat_file_name="Mods.dat64",
@@ -299,14 +303,6 @@ class ModParser(parser.BaseParser):
                 data["stat_text"] = re.sub(
                     r"\[\[Nearby\|?([^]]*)]]",
                     lambda match: f"{{{{Radius|{match.group(1)}|{radius}m}}}}",
-                    data["stat_text"],
-                )
-
-            # Veiled modifiers
-            if mod["Domain"] == constants.MOD_DOMAIN.VEILED:
-                data["stat_text"] = re.sub(
-                    r"<veiled (\w+) (.+)>",
-                    lambda match: f"{{{{Veiled|{match.group(1)}|{match.group(2)}}}}}",
                     data["stat_text"],
                 )
 

@@ -82,7 +82,6 @@ from PyPoE.poe.file.translations import (
     MissingIdentifierWarning,
     TranslationFileCache,
     get_custom_translation_file,
-    get_hardcoded_translation_file,
     install_data_dependant_quantifiers,
 )
 from PyPoE.poe.sim.mods import get_mod_translation_file
@@ -106,6 +105,12 @@ __all__ = [
 ]
 
 DEFAULT_INDENT = 32
+
+_LANG = {
+    "English": {
+        "Hidden": "Hidden",
+    },
+}
 
 _inter_wiki_map = {
     "English": (
@@ -692,6 +697,7 @@ def _make_inter_wiki_re():
 
 _inter_wiki_re = _make_inter_wiki_re()
 
+
 # =============================================================================
 # Classes
 # =============================================================================
@@ -716,14 +722,12 @@ class BaseParser:
     _HIDDEN_FORMAT = {
         "English": "%s (Hidden)",
     }
-    _MISSING_MSG = "Several arguments have not been found:\n%s"
-
-    _TC_KWARGS = {}
 
     _files = []
     _translations = []
+    _TC_KWARGS = {}
 
-    def __init__(self, base_path, parsed_args):
+    def __init__(self, base_path, parsed_args=[]):
         self.parsed_args = parsed_args
         # Make sure to load the appropriate version of the specification
         self.specification = load(version=config.get_option("version"))
@@ -763,12 +767,11 @@ class BaseParser:
         )
 
         self.custom = get_custom_translation_file(sequel=2)
-        self.hardcoded = get_hardcoded_translation_file(sequel=2)
 
         self._img_path = None
         self.lang = config.get_option("language")
 
-    def _column_index_filter(self, dat_file_name, column_id, arg_list, error_msg=_MISSING_MSG):
+    def _column_index_filter(self, dat_file_name, column_id, arg_list, error_msg=None):
         self.rr[dat_file_name].build_index(column_id)
 
         rows = []
@@ -786,7 +789,8 @@ class BaseParser:
                 missing.append(argument)
 
         if missing:
-            console(self._MISSING_MSG % "\n".join(missing), msg=Msg.warning)
+            error_msg = error_msg or "Several arguments have not been found:\n%s"
+            console(error_msg % "\n".join(missing), msg=Msg.warning)
 
         return rows
 
@@ -805,6 +809,9 @@ class BaseParser:
 
     def _format_detailed(self, custom, ingame):
         return self._DETAILED_FORMAT % (custom, ingame)
+
+    def _format_custom_hidden(self, string):
+        return "%s (%s)" % (string, _LANG[self.lang]["Hidden"])
 
     def _format_description_tags(self, text, tag_handler=None):
         tag_handler = tag_handler or TagHandler(self.rr)
@@ -873,117 +880,90 @@ class BaseParser:
                 (stat, self._fix_sign(value, mod["Id"], stat)) for stat, value in zip(stats, values)
             )
 
-        # Check for hardcoded stat descriptions first
-        hardcoded_result = self.hardcoded.get_translation(
+        result = self.tc[translation_file].get_translation(
             stats,
             values,
             full_result=True,
             lang=self.lang,
         )
-        out = [make_inter_wiki_links(line) for line in hardcoded_result.lines]
+        out = []
 
-        # Next check the game's translation files
-        if hardcoded_result.missing_ids:
-            result = self.tc[translation_file].get_translation(
-                hardcoded_result.missing_ids,
-                hardcoded_result.missing_values,
-                full_result=True,
-                lang=self.lang,
+        if mod and mod["Domain"] == constants.MOD_DOMAIN.MONSTER:
+            default = self.tc["stat_descriptions.csd"].get_translation(
+                result.source_ids, result.source_values, full_result=True, lang=self.lang
             )
+            temp_ids = []
+            temp_trans = []
 
-            if mod and mod["Domain"] == constants.MOD_DOMAIN.MONSTER:
-                default = self.tc["stat_descriptions.csd"].get_translation(
-                    result.source_ids, result.source_values, full_result=True, lang=self.lang
-                )
-                temp_ids = []
-                temp_trans = []
-
-                for i, tr in enumerate(default.found):
-                    for j, tr2 in enumerate(result.found):
-                        if tr.ids != tr2.ids:
-                            continue
-
-                        r1 = tr.get_language(self.lang).format_string(default.values[i])
-                        r2 = tr2.get_language(self.lang).format_string(result.values[j])
-                        if r1 and r2 and r1[0] != r2[0]:
-                            temp_trans.append(self._format_detailed(r1[0], r2[0]))
-                        elif r2 and r2[0]:
-                            temp_trans.append(self._format_hidden(r2[0]))
-                        temp_ids.append(tr.ids)
-
-                    is_missing = False
-                    for tid in tr.ids:
-                        if tid in result.missing_ids:
-                            is_missing = True
-                            break
-
-                    if not is_missing:
+            for i, tr in enumerate(default.found):
+                for j, tr2 in enumerate(result.found):
+                    if tr.ids != tr2.ids:
                         continue
 
                     r1 = tr.get_language(self.lang).format_string(default.values[i])
-                    if r1 and r1[0]:
-                        temp_trans.append(self._format_hidden(r1[0]))
-                        temp_ids.append(tr.ids)
+                    r2 = tr2.get_language(self.lang).format_string(result.values[j])
+                    if r1 and r2 and r1[0] != r2[0]:
+                        temp_trans.append(self._format_detailed(r1[0], r2[0]))
+                    elif r2 and r2[0]:
+                        temp_trans.append(self._format_hidden(r2[0]))
+                    temp_ids.append(tr.ids)
 
-                    for tid in tr.ids:
-                        try:
-                            i = result.missing_ids.index(tid)
-                        except ValueError:
-                            continue
-                        del result.missing_ids[i]
-                        del result.missing_values[i]
+                is_missing = False
+                for tid in tr.ids:
+                    if tid in result.missing_ids:
+                        is_missing = True
+                        break
 
-                index = 0
-                for i, tr in enumerate(result.found):
+                if not is_missing:
+                    continue
+
+                r1 = tr.get_language(self.lang).format_string(default.values[i])
+                if r1 and r1[0]:
+                    temp_trans.append(self._format_hidden(r1[0]))
+                    temp_ids.append(tr.ids)
+
+                for tid in tr.ids:
                     try:
-                        index = temp_ids.index(tr.ids)
+                        i = result.missing_ids.index(tid)
                     except ValueError:
-                        temp_ids.insert(index, tr.ids)
-                        temp_trans.insert(
-                            index,
-                            make_inter_wiki_links(
-                                tr.get_language(self.lang).format_string(result.values[i])[0]
-                            ),
-                        )
-                    else:
-                        pass
+                        continue
+                    del result.missing_ids[i]
+                    del result.missing_values[i]
 
-                for line in temp_trans:
-                    if line:
-                        out.append(line)
-            else:
-                result_lines = result.lines
-                for client_string in result.client_string_formats:
-                    format: str = self.rr["ClientStrings.dat64"].index["Id"][client_string]["Text"]
-                    # works for now, may need to revisit if different formats are added to _CLIENT_STRINGS_LOOKUP
-                    result_lines = (
-                        [format.format(line) for line in result_lines] if result_lines else [format]
+            index = 0
+            for i, tr in enumerate(result.found):
+                try:
+                    index = temp_ids.index(tr.ids)
+                except ValueError:
+                    temp_ids.insert(index, tr.ids)
+                    temp_trans.insert(
+                        index,
+                        make_inter_wiki_links(
+                            tr.get_language(self.lang).format_string(result.values[i])[0]
+                        ),
                     )
+                else:
+                    pass
 
-                for line in result_lines:
-                    if line:
-                        out.append(make_inter_wiki_links(line))
+            for line in temp_trans:
+                if line:
+                    out.append(line)
+        else:
+            for i, line in enumerate(result.lines):
+                if line:
+                    # Append "(Hidden)" to custom hidden stats
+                    if "custom_hidden" in result.extra_strings[i]:
+                        line = self._format_custom_hidden(line)
 
-            if result.missing_ids:
-                # Then check for a custom result, using missing values from the results
-                custom_result = self.custom.get_translation(
-                    result.missing_ids,
-                    result.missing_values,
-                    full_result=True,
-                    lang=self.lang,
-                )
+                    out.append(make_inter_wiki_links(line))
 
-                if custom_result.missing_ids:
-                    warnings.warn(
-                        f'Mod {mod["Id"] if mod is not None else "??"}: Missing translations for ids'
-                        f" {custom_result.missing_ids} and values {custom_result.missing_values}",
-                        MissingIdentifierWarning,
-                    )
-
-                # Save custom stat lines with "(hidden)" appended
-                for line in custom_result.lines:
-                    if line:
-                        out.append(self._HIDDEN_FORMAT[self.lang] % line)
+        # Warn about missing translations
+        if result.missing_ids:
+            warnings.warn(
+                f'Mod {mod["Id"] if mod is not None else "??"}: Missing translations for ids'
+                f" {result.missing_ids} and values {result.missing_values}",
+                MissingIdentifierWarning,
+            )
 
         finalout = []
         for line in out:

@@ -127,6 +127,10 @@ class ModParser(parser.BaseParser):
         "map_stat_descriptions.csd",
     ]
 
+    _TC_KWARGS = {
+        "merge_with_custom_file": True,
+    }
+
     _mod_column_index_filter = partialmethod(
         parser.BaseParser._column_index_filter,
         dat_file_name="Mods.dat64",
