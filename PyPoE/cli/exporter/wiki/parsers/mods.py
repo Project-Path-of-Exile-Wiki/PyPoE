@@ -40,15 +40,12 @@ import re
 from collections import OrderedDict, defaultdict
 from functools import partialmethod
 
+# Self
 from PyPoE.cli.core import Msg, console
-from PyPoE.cli.exporter import config
 from PyPoE.cli.exporter.wiki import parser
 from PyPoE.cli.exporter.wiki.handler import ExporterHandler, ExporterResult
-
-# Self
 from PyPoE.poe import poe1constants as constants
 from PyPoE.poe import text
-from PyPoE.shared.decorators import deprecated
 
 # =============================================================================
 # Globals
@@ -118,18 +115,6 @@ class ModsHandler(ExporterHandler):
             func=ModParser.filter,
         )
 
-        # Tempest
-        parser = lua_sub.add_parser(
-            "tempest",
-            help="Extract tempest stuff (DEPRECATED).",
-        )
-        self.add_default_parsers(
-            parser=parser,
-            cls=ModParser,
-            func=ModParser.tempest,
-            wiki=False,
-        )
-
     def add_default_parsers(self, *args, **kwargs):
         super().add_default_parsers(*args, **kwargs)
         parser = kwargs["parser"]
@@ -157,17 +142,6 @@ class ModParser(parser.BaseParser):
         dat_file_name="Mods.dat64",
         error_msg="Several areas have not been found:\n%s",
     )
-
-    def _append_effect(self, result, mylist, heading):
-        mylist.append(heading)
-
-        for line in result.lines:
-            mylist.append("* %s" % line)
-        for i, stat_id in enumerate(result.missing_ids):
-            value = result.missing_values[i]
-            if hasattr(value, "__iter__"):
-                value = "(%s to %s)" % tuple(value)
-            mylist.append("* %s %s" % (stat_id, value))
 
     def by_rowid(self, parsed_args):
         return self._export(
@@ -367,88 +341,5 @@ class ModParser(parser.BaseParser):
                 ],
                 wiki_message="Mod updater",
             )
-
-        return r
-
-    @deprecated(message="Will be done in-wiki in the future - non functional")
-    def tempest(self, parsed_args):
-        tf = self.tc["map_stat_descriptions.csd"]
-        data = []
-        for mod in self.rr["Mods.dat64"]:
-            # Is it a tempest mod?
-            if mod["CorrectGroup"] != "MapEclipse":
-                continue
-
-            # Doesn't have a name - probably not implemented
-            if not mod["Name"]:
-                continue
-
-            stats = []
-            for i in constants.MOD_STATS_RANGE:
-                stat = mod["StatsKey%s" % i]
-                if stat:
-                    stats.append(stat)
-
-            info = {}
-            info["name"] = mod["Name"]
-            effects = []
-
-            stat_ids = [st["Id"] for st in stats]
-            stat_values = []
-
-            for i, stat in enumerate(stats):
-                j = i + 1
-                values = [mod["Stat%sMin" % j], mod["Stat%sMax" % j]]
-                if values[0] == values[1]:
-                    values = values[0]
-                stat_values.append(values)
-
-            try:
-                index = stat_ids.index("map_summon_exploding_buff_storms")
-            except ValueError:
-                pass
-            else:
-                # Value is incremented by 1 for some reason
-                tempest = self.rr["ExplodingStormBuffs.dat64"][stat_values[index] - 1]
-
-                stat_ids.pop(index)
-                stat_values.pop(index)
-
-                if tempest["BuffDefinitionsKey"]:
-                    tempest_stats = tempest["BuffDefinitionsKey"]["StatKeys"]
-                    tempest_values = tempest["StatValues"]
-                    tempest_stat_ids = [st["Id"] for st in tempest_stats]
-                    t = tf.get_translation(
-                        tempest_stat_ids,
-                        tempest_values,
-                        full_result=True,
-                        lang=config.get_option("language"),
-                    )
-                    self._append_effect(
-                        t, effects, "The tempest buff provides the following effects:"
-                    )
-                # if tempest['MonsterVarietiesKey']:
-                #    print(tempest['MonsterVarietiesKey'])
-                #    break
-
-            t = tf.get_translation(
-                stat_ids, stat_values, full_result=True, lang=config.get_option("language")
-            )
-            self._append_effect(t, effects, "The area gets the following modifiers:")
-
-            info["effect"] = "\n".join(effects)
-            data.append(info)
-
-        data.sort(key=lambda info: info["name"])
-
-        out = []
-        for info in data:
-            out.append("|-\n")
-            out.append("| %s\n" % info["name"])
-            out.append("| %s\n" % info["effect"])
-            out.append("| \n")
-
-        r = ExporterResult()
-        r.add_result(lines=out, out_file="tempest_mods.txt")
 
         return r

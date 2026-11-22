@@ -196,17 +196,6 @@ class ModParser(parser.BaseParser):
         ),
     )
 
-    def _append_effect(self, result, mylist, heading):
-        mylist.append(heading)
-
-        for line in result.lines:
-            mylist.append("* %s" % line)
-        for i, stat_id in enumerate(result.missing_ids):
-            value = result.missing_values[i]
-            if hasattr(value, "__iter__"):
-                value = "(%s to %s)" % tuple(value)
-            mylist.append("* %s %s" % (stat_id, value))
-
     def by_rowid(self, parsed_args):
         return self._export(
             parsed_args,
