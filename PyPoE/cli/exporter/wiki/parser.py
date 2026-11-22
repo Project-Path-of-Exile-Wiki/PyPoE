@@ -1770,10 +1770,10 @@ class BaseParser:
 
                     r1 = tr.get_language(self.lang).format_string(default.values[i])
                     r2 = tr2.get_language(self.lang).format_string(result.values[j])
-                    if r1 and r2 and r1[0] != r2[0]:
-                        temp_trans.append(self._format_detailed(r1[0], r2[0]))
-                    elif r2 and r2[0]:
-                        temp_trans.append(self._format_hidden(r2[0]))
+                    if r1 and r2 and r1.string != r2.string:
+                        temp_trans.append(self._format_detailed(r1.string, r2.string))
+                    elif r2 and r2.string:
+                        temp_trans.append(self._format_hidden(r2.string))
                     temp_ids.append(tr.ids)
 
                 is_missing = False
@@ -1786,8 +1786,8 @@ class BaseParser:
                     continue
 
                 r1 = tr.get_language(self.lang).format_string(default.values[i])
-                if r1 and r1[0]:
-                    temp_trans.append(self._format_hidden(r1[0]))
+                if r1 and r1.string:
+                    temp_trans.append(self._format_hidden(r1.string))
                     temp_ids.append(tr.ids)
 
                 for tid in tr.ids:
@@ -1808,7 +1808,7 @@ class BaseParser:
                         index,
                         make_inter_wiki_links(
                             process_keywords(
-                                tr.get_language(self.lang).format_string(result.values[i])[0]
+                                tr.get_language(self.lang).format_string(result.values[i]).string
                             )
                         ),
                     )
