@@ -7063,7 +7063,7 @@ specification = Specification(
                     type="int",
                 ),
                 Field(
-                    name="Flag1",
+                    name="InPresence",
                     type="bool",
                 ),
                 Field(
@@ -13797,8 +13797,9 @@ specification = Specification(
         "FishingHookTypes.dat": File(
             fields=(
                 Field(
-                    name="Unknown0",
+                    name="Index",
                     type="int",
+                    unique=True,
                 ),
                 Field(
                     name="Name",
@@ -13809,8 +13810,9 @@ specification = Specification(
         "FishingLureTypes.dat": File(
             fields=(
                 Field(
-                    name="Unknown0",
+                    name="Index",
                     type="int",
+                    unique=True,
                 ),
                 Field(
                     name="Name",
@@ -18922,6 +18924,7 @@ specification = Specification(
                 Field(
                     name="Index",
                     type="int",
+                    unique=True,
                 ),
                 Field(
                     name="SupportGem",
@@ -18939,6 +18942,7 @@ specification = Specification(
                 Field(
                     name="Index",
                     type="int",
+                    unique=True,
                 ),
                 Field(
                     name="SkillGem1",
@@ -18977,6 +18981,7 @@ specification = Specification(
                 Field(
                     name="Index",
                     type="int",
+                    unique=True,
                 ),
                 Field(
                     name="SupportGem",
@@ -23850,6 +23855,15 @@ specification = Specification(
                 ),
             ),
         ),
+        "MercenaryDisabledUniques.dat": File(
+            fields=(
+                Field(
+                    name="UniqueName",
+                    type="ref|out",
+                    key="Words.dat",
+                ),
+            ),
+        ),
         "MercenaryFlavourText.dat": File(
             fields=(
                 Field(
@@ -25229,8 +25243,9 @@ specification = Specification(
         "MinionDoublingStatTypes.dat": File(
             fields=(
                 Field(
-                    name="Id",
+                    name="Index",
                     type="int",
+                    unique=True,
                 ),
                 Field(
                     name="Stat",
@@ -33763,8 +33778,9 @@ specification = Specification(
         "ShaperApparitionAbility.dat": File(
             fields=(
                 Field(
-                    name="Unknown0",
+                    name="Index",
                     type="int",
+                    unique=True,
                 ),
                 Field(
                     name="GrantedEffect",

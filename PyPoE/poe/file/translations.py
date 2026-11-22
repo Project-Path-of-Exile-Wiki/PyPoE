@@ -69,10 +69,6 @@ results that contain extra information and utility methods.
 
 .. autofunction:: set_custom_translation_file
 
-.. autofunction:: get_hardcoded_translation_file
-
-.. autofunction:: set_hardcoded_translation_file
-
 .. autofunction:: install_data_dependant_quantifiers
 
 Internal API
@@ -112,13 +108,15 @@ Warning Classes
 # Imports
 # =============================================================================
 
-# Python
 import io
 import os
 import re
 import warnings
 from collections import OrderedDict, defaultdict
 from collections.abc import Iterable
+
+# Python
+from dataclasses import dataclass
 from enum import IntEnum
 from string import ascii_letters
 from typing import Any, Callable, Dict, List, Literal, Tuple, TypeVar, Union, overload
@@ -141,14 +139,10 @@ __all__ = [
     "get_custom_translation_file",
     "set_custom_translation_file",
     "custom_translation_file",
-    "get_hardcoded_translation_file",
-    "set_hardcoded_translation_file",
-    "hardcoded_translation_file",
     "install_data_dependant_quantifiers",
 ]
 
 CUSTOM_TRANSLATION_FILE = os.path.join(DATA_DIR, "custom_descriptions.txt")
-HARDCODED_TRANSLATION_FILE = os.path.join(DATA_DIR, "hardcoded_descriptions.txt")
 
 regex_translation_string = re.compile(
     r"^"
@@ -177,7 +171,6 @@ regex_tokens = re.compile(
 )
 
 _custom_translation_file = None
-_hardcoded_translation_file = None
 
 StatValue = TypeVar("StatValue", int, Tuple)
 """Numeric value to interpolate into a stat string. If a tuple is supplied,
@@ -308,6 +301,31 @@ class Translation(TranslationReprMixin):
         return etr
 
 
+@dataclass(slots=True)
+class TranslationStringFormatResult:
+    """
+    Used for the return value of :meth:`TranslationString:format_string`.
+
+    string
+        The formatted string. If only placeholder is specified, instead of the
+        string a list of parsed values is returned.
+    unused
+        List of unused values
+    values
+        List of used values
+    extra_strings
+        Dictionary of extra strings
+    formatted_values
+        List of formatted stat values
+    """
+
+    string: Union[str, List[int]]
+    unused: List[int]
+    values: List[int]
+    extra_strings: Dict[str, str]
+    formatted_values: List[str | Tuple[str, str]]
+
+
 class TranslationLanguage(TranslationReprMixin):
     """
     Representation of a language in the translation file. Each language has
@@ -434,18 +452,14 @@ class TranslationLanguage(TranslationReprMixin):
         self,
         values: Union[List[int], List[Tuple[int, int]]],
         use_placeholder: Union[bool, Callable[[int], Any]] = False,
-        only_values: bool = False,
         restriction: str = None,
-    ) -> Tuple[Union[str, List[int]], List[int], List[int], Dict[str, str]]:
+    ) -> TranslationStringFormatResult:
         """
         Formats the string according with the given values and
         returns the string and any left over (unused) values.
 
         If use_placeholder is specified, the values will be replaced with
         a placeholder instead of the actual value.
-
-        If only_values is specified, the instead of the string the formatted
-        values will be returned.
 
 
         Parameters
@@ -459,23 +473,21 @@ class TranslationLanguage(TranslationReprMixin):
             If a callable is specified, it will call the function with
             the index as first parameter. The callable should return a
             string to use as placeholder.
-        only_values
-            Whether to return formatted values instead of the formatted string.
         restriction
             Restriction to look for in translation lines
 
 
         Returns
         -------
-            Returns the formatted string. See
-            :meth:`TranslationString:format_string` for details.
+            Returns a TranslationStringFormatResult dataclass.
+            See :meth:`TranslationString:format_string` for details.
         """
         ts, short_values, is_range = self.get_string(values, restriction)
 
         if ts is None:
             return None
 
-        return ts.format_string(short_values, is_range, use_placeholder, only_values)
+        return ts.format_string(short_values, is_range, use_placeholder)
 
     def reverse_string(self, string: str) -> "TranslationString":
         """
@@ -638,18 +650,13 @@ class TranslationString(TranslationReprMixin):
         is_range: List[bool],
         use_placeholder: Union[bool, Callable[[int], Any]] = False,
         custom_formatter: Callable = None,
-    ) -> Tuple[
-        Union[str, List[int]], List[int], List[int], Dict[str, str], List[str | Tuple[str, str]]
-    ]:
+    ) -> TranslationStringFormatResult:
         """
         Formats the string for the given values.
 
         Optionally use_placeholder can be specified to return a string formatted
         with a placeholder in place of the real value. It will use lowercase
         ASCII starting at x. For indexes > 3, it will use uppercase ASCII.
-
-        If only_values is specified, no string formatting will performed
-        and instead just parsed values will be returned.
 
         Parameters
         ----------
@@ -666,23 +673,11 @@ class TranslationString(TranslationReprMixin):
             the index as first parameter. The callable should return a
             string to use as placeholder.
 
-
         Returns
         -------
-            Returns 5 values.
-
-            The first return value is the formatted string. If only placeholder
-            is specified, instead of the string a list of parsed values is
-            returned.
-
-            The second return value is a list of unused values.
-
-            The third return value is a list of used values.
-
-            The fourth return value is a dictionary of extra strings
-
-            The fifth return value is a list of formatted stat values
+            Returns a TranslationStringFormatResult dataclass
         """
+
         values, extra_strings, formats = self.quantifier.handle(values, is_range)
 
         string = []
@@ -728,7 +723,23 @@ class TranslationString(TranslationReprMixin):
 
         string = "".join(string + [self.strings[-1]])
 
-        return string, unused, values, extra_strings, formatted_values
+        # In custom descriptions files, a special translation quantifier
+        # allows us to use a client string for the stat description.
+        # This requires data dependent quantifiers to be installed.
+        if "custom_client_string" in extra_strings:
+            # TODO: This error handling is not very useful for tracking down problems
+            try:
+                string = extra_strings["custom_client_string"].format(*values)
+            except IndexError:
+                warnings.warn(
+                    "Client string format expects more values than were given. Check custom descriptions file.",
+                    TranslationWarning,
+                )
+                raise
+
+        return TranslationStringFormatResult(
+            string, unused, values, extra_strings, formatted_values
+        )
 
     def match_range(self, values: List[Union[int, float]]) -> int:
         """
@@ -1075,8 +1086,12 @@ class TranslationQuantifierHandler(TranslationReprMixin):
                 elif handler.type == TranslationQuantifier.QuantifierTypes.STRING:
                     self.string_handlers[handler.id] = args
             else:
+                # TODO: Throwing an error here prevents anything from being done when an
+                # unrecognized quanitfier is read, whether or not we end up using that
+                # translation string. Is there a way to fail more gracefully?
                 raise TypeError(
-                    f"Uncaptured quantifier {partial}, add in PyPoE/poe/translations.py"
+                    f'Encountered unrecognized quantifier "{partial}" while '
+                    "reading translation file. Add in PyPoE/poe/translations.py."
                 )
 
     def handle(
@@ -1377,6 +1392,34 @@ class TQRelationalData(TranslationQuantifier):
             return result
 
 
+class TQClientString(TranslationQuantifier):
+    def __init__(
+        self,
+        id: str,
+        relational_reader: RelationalReader,
+    ):
+        self.table = relational_reader["ClientStrings.dat64"]
+        if "Id" not in self.table.index:
+            self.table.build_index("Id")
+        super().__init__(
+            id=id,
+            type=self.QuantifierTypes.STRING,
+            handler=self.handle,
+            reverse_handler=None,
+        )
+
+    def handle(self, cs_id):
+        try:
+            cs = self.table.index["Id"][cs_id]["Text"]
+        except KeyError:
+            warnings.warn(
+                '"%s" not found in ClientStrings.dat. Check custom descriptions file.' % cs_id,
+                TranslationWarning,
+            )
+            raise
+        return cs
+
+
 class TranslationResult(TranslationReprMixin):
     """
     Translation result of :meth:`TranslationFile:get_translation`.
@@ -1409,8 +1452,8 @@ class TranslationResult(TranslationReprMixin):
         List of dictionary containing extra strings returned.
         The key is the quantifier id used and the value is the string returned.
     string_instances
-    tf_indices
-        The index of the translation that was used from the translation file
+        List of TranslationString instances corresponding to each of the found
+        translations in the working language
     """
 
     __slots__ = [
@@ -1427,8 +1470,6 @@ class TranslationResult(TranslationReprMixin):
         "source_values",
         "extra_strings",
         "string_instances",
-        "tf_indices",
-        "client_string_formats",
     ]
 
     def __init__(
@@ -1436,36 +1477,40 @@ class TranslationResult(TranslationReprMixin):
         found,
         found_lines,
         lines,
-        missing,
+        missing_ids,
         missing_values,
         partial,
         values,
-        unused,
+        values_unused,
         values_parsed,
         source_ids,
         source_values,
         extra_strings,
         string_instances,
-        tf_indices,
-        client_string_formats,
     ):
         self.found: List[Translation] = found
         self.found_lines: List[str] = found_lines
         self.lines: List[str] = lines
-        self.missing_ids: List[str] = missing
+        self.missing_ids: List[str] = missing_ids
         self.missing_values: List[int] = missing_values
         self.partial: List[Translation] = partial
         self.values: List[int] = values
-        self.values_unused: List[int] = unused
+        self.values_unused: List[int] = values_unused
         self.values_parsed: List[str] = values_parsed
         self.source_ids: List[str] = source_ids
         self.source_values: Union[List[int], List[Tuple[int, int]]] = source_values
         self.extra_strings: List[Dict[str, str]] = extra_strings
         self.string_instances: List[TranslationString] = string_instances
-        self.tf_indices: List[Union[int, None]] = tf_indices
-        self.client_string_formats: List[str] = client_string_formats
 
-    def _get_found_ids(self) -> List[List[str]]:
+    @property
+    def tf_indices(self) -> List[int]:
+        """
+        Get list of indices of translations that were used from the translation file
+        """
+        return [tr.tf_index for tr in self.found]
+
+    @property
+    def found_ids(self) -> List[List[str]]:
         """
         Generates a list of found ids and returns it.
 
@@ -1475,8 +1520,6 @@ class TranslationResult(TranslationReprMixin):
             List of found ids
         """
         return [tr.ids for tr in self.found]
-
-    found_ids = property(fget=_get_found_ids)
 
     @property
     def missing(self):
@@ -1537,14 +1580,6 @@ class TranslationFile(AbstractFileReadOnly):
     _VIRTUAL_STAT_LOOKUP = {
         "corrosive_shroud_maximum_stored_poison_damage": "virtual_plague_bearer_maximum_stored_poison_damage"
         # noqa
-    }
-
-    # Some stat IDs need to be manually mapped to IDs in ClientStrings.dat
-    _CLIENT_STRINGS_LOOKUP = {
-        # PoE 1
-        "map_is_uber_map": "ItemPopupUnmodifiableExceptChaosOrbs",
-        "local_influence_mod_requires_celestial_boss_presence": "InfluenceStatConditionPresenceCelestialBoss",
-        "local_influence_mod_requires_unique_monster_presence": "InfluenceStatConditionPresenceUniqueMonster",
     }
 
     def __init__(
@@ -1982,6 +2017,9 @@ class TranslationFile(AbstractFileReadOnly):
                 if values[tag] == 0:
                     continue
 
+            # TODO: We don't normally want to display zero value stats, but
+            # should they still be counted as missing if they're not found
+            # in the translation hash?
             if tag not in self.translations_hash:
                 trans_missing.append(tag)
                 trans_missing_values.append(values[tag])
@@ -2018,7 +2056,6 @@ class TranslationFile(AbstractFileReadOnly):
         values_parsed = []
         extra_strings = []
         string_instances = []
-        tf_indices: List[int] = []
         formatted_values = {}
         for i, tr in enumerate(trans_found):
             tl = tr.get_language(lang)
@@ -2026,49 +2063,41 @@ class TranslationFile(AbstractFileReadOnly):
             if ts:
                 string_instances.append(ts)
                 result = ts.format_string(short_values, is_range, use_placeholder)
-                trans_lines.append(result[0])
-                trans_found_lines.append(result[0])
-                values_parsed.append(result[2])
+                trans_lines.append(result.string)
+                trans_found_lines.append(result.string)
+                values_parsed.append(result.values)
+
                 if only_values:
-                    for stat, val in zip(tr.ids, result[4]):
+                    for stat, val in zip(tr.ids, result.formatted_values):
                         if val:
                             formatted_values[stat] = val
 
                 if full_result:
-                    unused.append(result[1])
-                    extra_strings.append(result[3])
+                    unused.append(result.unused)
+                    extra_strings.append(result.extra_strings)
             else:
                 trans_found_lines.append("")
                 values_parsed.append([])
-
-            tf_indices.append(tr.tf_index)
 
         if full_result:
             return TranslationResult(
                 found=trans_found,
                 found_lines=trans_found_lines,
                 lines=trans_lines,
-                missing=trans_missing,
+                missing_ids=trans_missing,
                 missing_values=trans_missing_values,
-                values=trans_found_values,
-                values_parsed=values_parsed,
                 partial=partial,
-                unused=unused,
+                values=trans_found_values,
+                values_unused=unused,
+                values_parsed=values_parsed,
                 source_ids=tags,
                 source_values=values,
                 extra_strings=extra_strings,
                 string_instances=string_instances,
-                tf_indices=tf_indices,
-                client_string_formats=[
-                    self._CLIENT_STRINGS_LOOKUP[tag]
-                    for tag in tags
-                    if tag in self._CLIENT_STRINGS_LOOKUP
-                ],
             )
         if only_values:
             return formatted_values
-        else:
-            return trans_lines
+        return trans_lines
 
     def reverse_translation(self, string: str, lang: str = "English") -> TranslationReverseResult:
         """
@@ -2322,60 +2351,6 @@ custom_translation_file = property(
 )
 
 
-def get_hardcoded_translation_file(sequel=1) -> TranslationFile:
-    """
-    Returns the currently loaded hardcoded translation file.
-
-    Loads the default file if none is loaded.
-
-    Parameters
-    ----------
-    sequel : int
-        Should use poe1 or poe2 files?
-        default to poe1
-
-    Returns
-    -------
-    TranslationFile
-        the currently loaded hardcoded translation file
-    """
-    global _hardcoded_translation_file
-    if _hardcoded_translation_file is None:
-        set_hardcoded_translation_file(sequel=sequel)
-    return _hardcoded_translation_file
-
-
-def set_hardcoded_translation_file(file: Union[str, None] = None, sequel=1):
-    """
-    Sets the hardcoded translation file.
-
-    Parameters
-    ----------
-    file : str
-        Path where the hardcoded translation file is located. If None,
-        the default file will be loaded
-
-    sequel : int
-        Should use poe1 or poe2 files?
-        default to poe1
-    """
-    global _hardcoded_translation_file
-    wiki = "wiki" if sequel == 1 else "poe2wiki"
-
-    hardcoded_file = os.path.join(
-        os.path.dirname(HARDCODED_TRANSLATION_FILE),
-        wiki,
-        os.path.basename(HARDCODED_TRANSLATION_FILE),
-    )
-    _hardcoded_translation_file = TranslationFile(file_path=file or hardcoded_file)
-
-
-hardcoded_translation_file = property(
-    fget=get_hardcoded_translation_file,
-    fset=set_hardcoded_translation_file,
-)
-
-
 def install_data_dependant_quantifiers(relational_reader: RelationalReader):
     """
     Install data dependant quantifiers into this class.
@@ -2390,6 +2365,12 @@ def install_data_dependant_quantifiers(relational_reader: RelationalReader):
     constants = relational_reader.specification.constants
 
     TQReminderString(relational_reader=relational_reader)
+
+    # Can be used in custom descriptions files to get stat description from a client string
+    TQClientString(
+        id="custom_client_string",
+        relational_reader=relational_reader,
+    )
 
     TQRelationalData(
         id="mod_value_to_item_class",
@@ -2483,6 +2464,7 @@ def install_data_dependant_quantifiers(relational_reader: RelationalReader):
             relational_reader=relational_reader,
             table="ShaperApparitionAbility.dat64",
             index_start=1,
+            index_column="Index",
             value_column="Name",
             placeholder="&lt;random Shaper Memory Skill&gt;",
         )
@@ -2492,19 +2474,10 @@ def install_data_dependant_quantifiers(relational_reader: RelationalReader):
             relational_reader=relational_reader,
             table="MinionDoublingStatTypes.dat64",
             index_start=1,
-            index_column="Id",
+            index_column="Index",
             value_column="Name",
             placeholder="&lt;random Minion Type&gt;",
         )
-
-        # TODO: Figure out which table this uses
-        # TQRelationalData(
-        #     id="pelagic_pearl_slot",
-        #     relational_reader=relational_reader,
-        #     table=".dat64",
-        #     index_start=1,
-        #     placeholder="&lt;random slot&gt;",
-        # )
 
         # TODO: This quantifier is supposed to take 2 stat index arguments, but this doesn't work yet.
         TQRelationalData(
@@ -2520,7 +2493,7 @@ def install_data_dependant_quantifiers(relational_reader: RelationalReader):
             id="fishing_lure_type",
             relational_reader=relational_reader,
             table="FishingLureTypes.dat64",
-            index_start=1,
+            index_column="Index",
             value_column="Name",
             placeholder="&lt;random Fishing Lure&gt;",
         )
@@ -2529,9 +2502,27 @@ def install_data_dependant_quantifiers(relational_reader: RelationalReader):
             id="fishing_hook_type",
             relational_reader=relational_reader,
             table="FishingHookTypes.dat64",
-            index_start=1,
+            index_column="Index",
             value_column="Name",
             placeholder="&lt;random Fishing Hook&gt;",
+        )
+
+        TQRelationalData(
+            id="elder_guardian_index",
+            relational_reader=relational_reader,
+            table="ElderGuardians.dat64",
+            index_start=1,
+            value_column="Name",
+            placeholder="&lt;random Elder Guardian&gt;",
+        )
+
+        TQRelationalData(
+            id="atlas_exile_citadel_index",
+            relational_reader=relational_reader,
+            table="AtlasExiles.dat64",
+            index_start=1,
+            value_column="CitadelName",
+            placeholder="&lt;random Conqueror's Citadel&gt;",
         )
 
     # PoE2
@@ -2922,9 +2913,38 @@ TranslationQuantifier(
     id="canonical_stat",
 )
 
-# These will be replaced by install_data_dependant_quantifiers
+# This doesn't use a table lookup. Each value is mapped to a client string
+# using hardcoded internal mapping in the game client.
+TranslationQuantifier(
+    id="pelagic_pearl_slot",
+)
+
+#
+# Can be used in custom descriptions files
+#
+TranslationQuantifier(
+    id="custom_hidden",
+    type=TranslationQuantifier.QuantifierTypes.STRING,
+    handler=lambda: True,
+    arg_size=0,
+)
+
+TranslationQuantifier(
+    id="custom_veiled",
+    type=TranslationQuantifier.QuantifierTypes.STRING,
+    handler=lambda v: v,
+)
+
+#
+# These are overwritten by install_data_dependant_quantifiers
+#
 TranslationQuantifier(
     id="reminderstring",
+    type=TranslationQuantifier.QuantifierTypes.STRING,
+)
+
+TranslationQuantifier(
+    id="custom_client_string",
     type=TranslationQuantifier.QuantifierTypes.STRING,
 )
 
@@ -2977,10 +2997,6 @@ TranslationQuantifier(
 )
 
 TranslationQuantifier(
-    id="pelagic_pearl_slot",
-)
-
-TranslationQuantifier(
     id="display_indexable_non_active_support",
 )
 
@@ -2993,11 +3009,11 @@ TranslationQuantifier(
 )
 
 TranslationQuantifier(
-    id="atlas_exile_citadel_index",
+    id="elder_guardian_index",
 )
 
 TranslationQuantifier(
-    id="elder_guardian_index",
+    id="atlas_exile_citadel_index",
 )
 
 TranslationQuantifier(

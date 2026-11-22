@@ -157,7 +157,7 @@ set -e
 pypoe_exporter $QUIET setup perform
 
 exporting mods &&
-pypoe_exporter $QUIET $WIKI mods mods rowid "${ARGS[@]}" "$@"
+pypoe_exporter $QUIET $WIKI mods rowid "${ARGS[@]}" "$@"
 exporting gem-skills &&
 pypoe_exporter $QUIET $WIKI skill by_gem "${IMG[@]}" "${ARGS[@]}" "$@"
 exporting skills &&
