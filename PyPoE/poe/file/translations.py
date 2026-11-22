@@ -301,7 +301,7 @@ class Translation(TranslationReprMixin):
         return etr
 
 
-@dataclass
+@dataclass(slots=True)
 class TranslationStringFormatResult:
     """
     Used for the return value of :meth:`TranslationString:format_string`.
@@ -1452,8 +1452,8 @@ class TranslationResult(TranslationReprMixin):
         List of dictionary containing extra strings returned.
         The key is the quantifier id used and the value is the string returned.
     string_instances
-    tf_indices
-        The index of the translation that was used from the translation file
+        List of TranslationString instances corresponding to each of the found
+        translations in the working language
     """
 
     __slots__ = [
@@ -1470,7 +1470,6 @@ class TranslationResult(TranslationReprMixin):
         "source_values",
         "extra_strings",
         "string_instances",
-        "tf_indices",
     ]
 
     def __init__(
@@ -1478,34 +1477,40 @@ class TranslationResult(TranslationReprMixin):
         found,
         found_lines,
         lines,
-        missing,
+        missing_ids,
         missing_values,
         partial,
         values,
-        unused,
+        values_unused,
         values_parsed,
         source_ids,
         source_values,
         extra_strings,
         string_instances,
-        tf_indices,
     ):
         self.found: List[Translation] = found
         self.found_lines: List[str] = found_lines
         self.lines: List[str] = lines
-        self.missing_ids: List[str] = missing
+        self.missing_ids: List[str] = missing_ids
         self.missing_values: List[int] = missing_values
         self.partial: List[Translation] = partial
         self.values: List[int] = values
-        self.values_unused: List[int] = unused
+        self.values_unused: List[int] = values_unused
         self.values_parsed: List[str] = values_parsed
         self.source_ids: List[str] = source_ids
         self.source_values: Union[List[int], List[Tuple[int, int]]] = source_values
         self.extra_strings: List[Dict[str, str]] = extra_strings
         self.string_instances: List[TranslationString] = string_instances
-        self.tf_indices: List[Union[int, None]] = tf_indices
 
-    def _get_found_ids(self) -> List[List[str]]:
+    @property
+    def tf_indices(self) -> List[int]:
+        """
+        Get list of indices of translations that were used from the translation file
+        """
+        return [tr.tf_index for tr in self.found]
+
+    @property
+    def found_ids(self) -> List[List[str]]:
         """
         Generates a list of found ids and returns it.
 
@@ -1515,8 +1520,6 @@ class TranslationResult(TranslationReprMixin):
             List of found ids
         """
         return [tr.ids for tr in self.found]
-
-    found_ids = property(fget=_get_found_ids)
 
     @property
     def missing(self):
@@ -2014,6 +2017,9 @@ class TranslationFile(AbstractFileReadOnly):
                 if values[tag] == 0:
                     continue
 
+            # TODO: We don't normally want to display zero value stats, but
+            # should they still be counted as missing if they're not found
+            # in the translation hash?
             if tag not in self.translations_hash:
                 trans_missing.append(tag)
                 trans_missing_values.append(values[tag])
@@ -2050,7 +2056,6 @@ class TranslationFile(AbstractFileReadOnly):
         values_parsed = []
         extra_strings = []
         string_instances = []
-        tf_indices: List[int] = []
         formatted_values = {}
         for i, tr in enumerate(trans_found):
             tl = tr.get_language(lang)
@@ -2074,29 +2079,25 @@ class TranslationFile(AbstractFileReadOnly):
                 trans_found_lines.append("")
                 values_parsed.append([])
 
-            tf_indices.append(tr.tf_index)
-
         if full_result:
             return TranslationResult(
                 found=trans_found,
                 found_lines=trans_found_lines,
                 lines=trans_lines,
-                missing=trans_missing,
+                missing_ids=trans_missing,
                 missing_values=trans_missing_values,
-                values=trans_found_values,
-                values_parsed=values_parsed,
                 partial=partial,
-                unused=unused,
+                values=trans_found_values,
+                values_unused=unused,
+                values_parsed=values_parsed,
                 source_ids=tags,
                 source_values=values,
                 extra_strings=extra_strings,
                 string_instances=string_instances,
-                tf_indices=tf_indices,
             )
         if only_values:
             return formatted_values
-        else:
-            return trans_lines
+        return trans_lines
 
     def reverse_translation(self, string: str, lang: str = "English") -> TranslationReverseResult:
         """
