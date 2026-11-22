@@ -759,7 +759,7 @@ class SkillParserShared(parser.BaseParser):
                         values=values,
                         is_range=[bool(v) for v in values],
                         custom_formatter=str,
-                    )[0].split("\n")
+                    ).string.split("\n")
                 )
 
             infobox[prefix + "stat_text"] = parser.process_keywords(self._format_lines(lines))

@@ -201,7 +201,7 @@ class GenericLuaParser(BaseParser):
 
 class LuaHandler(ExporterHandler):
     def __init__(self, sub_parser):
-        self.parser = sub_parser.add_parser("lua", help="Lua Exporter")
+        self.parser = sub_parser.add_parser("lua", help="Export various datas in Lua format")
         self.parser.set_defaults(func=lambda args: self.parser.print_help())
         lua_sub = self.parser.add_subparsers()
 

@@ -40,15 +40,11 @@ import re
 from collections import OrderedDict, defaultdict
 from functools import partialmethod
 
+# Self
 from PyPoE.cli.core import Msg, console
-from PyPoE.cli.exporter import config
 from PyPoE.cli.exporter.wiki import parser
 from PyPoE.cli.exporter.wiki.handler import ExporterHandler, ExporterResult
-
-# Self
 from PyPoE.poe import poe1constants as constants
-from PyPoE.poe import text
-from PyPoE.shared.decorators import deprecated
 
 # =============================================================================
 # Globals
@@ -76,20 +72,32 @@ class ModWikiCondition(parser.WikiCondition):
 
 class ModsHandler(ExporterHandler):
     def __init__(self, sub_parser):
-        self.parser = sub_parser.add_parser("mods", help="Mods Exporter")
+        self.parser = sub_parser.add_parser("mods", help="Export mods data")
         self.parser.set_defaults(func=lambda args: self.parser.print_help())
-        lua_sub = self.parser.add_subparsers()
 
-        # Mods
-        mparser = lua_sub.add_parser("mods", help="Extract all mods.")
-        mparser.set_defaults(func=lambda args: mparser.print_help())
+        mods_sub = self.parser.add_subparsers()
+        self.add_default_subparser_filters(
+            sub_parser=mods_sub,
+            cls=ModParser,
+        )
 
-        sub = mparser.add_subparsers(help="Method of extracting mods")
+        # Filtering
+        parser = mods_sub.add_parser("filter", help="Extract mods using filters")
+        self.add_default_parsers(
+            parser=parser,
+            cls=ModParser,
+            func=ModParser.by_filter,
+        )
 
-        self.add_default_subparser_filters(sub, cls=ModParser)
+        parser.add_argument(
+            "-ft-id",
+            "--filter-id",
+            "--filter-metadata-id",
+            help="Filter by mod ID using a regular expression",
+            type=str,
+            dest="re_id",
+        )
 
-        # mods filter
-        parser = sub.add_parser("filter", help="Filter mods")
         parser.add_argument(
             "--domain",
             dest="domain",
@@ -99,7 +107,6 @@ class ModsHandler(ExporterHandler):
 
         parser.add_argument(
             "--generation-type",
-            "--type",
             dest="generation_type",
             help="Filter by mod generation type",
             choices=[k.name for k in constants.MOD_GENERATION_TYPE],
@@ -112,35 +119,19 @@ class ModsHandler(ExporterHandler):
             choices=[k.name for k in constants.GAME_MODES],
         )
 
-        self.add_default_parsers(
-            parser=parser,
-            cls=ModParser,
-            func=ModParser.filter,
-        )
-
-        # Tempest
-        parser = lua_sub.add_parser(
-            "tempest",
-            help="Extract tempest stuff (DEPRECATED).",
-        )
-        self.add_default_parsers(
-            parser=parser,
-            cls=ModParser,
-            func=ModParser.tempest,
-            wiki=False,
-        )
-
     def add_default_parsers(self, *args, **kwargs):
         super().add_default_parsers(*args, **kwargs)
-        parser = kwargs["parser"]
-        self.add_format_argument(parser)
+        self.add_format_argument(kwargs["parser"])
 
 
 class ModParser(parser.BaseParser):
+    _MODS_FILE_NAME = "Mods.datc64"
+    _STATS_FILE_NAME = "Stats.datc64"
+
     # Load files in advance
     _files = [
-        "Mods.datc64",
-        "Stats.datc64",
+        _MODS_FILE_NAME,
+        _STATS_FILE_NAME,
     ]
 
     # Load translations in advance
@@ -148,27 +139,85 @@ class ModParser(parser.BaseParser):
         "map_stat_descriptions.csd",
     ]
 
+    _TC_KWARGS = {
+        "merge_with_custom_file": True,
+    }
+
     _mod_column_index_filter = partialmethod(
         parser.BaseParser._column_index_filter,
-        dat_file_name="Mods.dat64",
-        error_msg="Several areas have not been found:\n%s",
+        dat_file_name=_MODS_FILE_NAME,
+        error_msg="Several modifiers have not been found:\n%s",
     )
 
-    def _append_effect(self, result, mylist, heading):
-        mylist.append(heading)
-
-        for line in result.lines:
-            mylist.append("* %s" % line)
-        for i, stat_id in enumerate(result.missing_ids):
-            value = result.missing_values[i]
-            if hasattr(value, "__iter__"):
-                value = "(%s to %s)" % tuple(value)
-            mylist.append("* %s %s" % (stat_id, value))
+    _COPY_KEYS = (
+        (
+            "Id",
+            {
+                "template": "id",
+            },
+        ),
+        (
+            "Domain",
+            {
+                "template": "domain",
+            },
+        ),
+        (
+            "GenerationType",
+            {
+                "template": "generation_type",
+            },
+        ),
+        (
+            "Level",
+            {
+                "template": "required_level",
+                "condition": lambda v: v > 0,
+            },
+        ),
+        (
+            "Name",
+            {
+                "template": "name",
+                "condition": lambda v: v,
+            },
+        ),
+        (
+            "Families",
+            {
+                "template": "mod_groups",
+                "condition": lambda v: v,
+                "format": lambda v: ", ".join([m["Id"] for m in v]),
+            },
+        ),
+        (
+            "ModTypeKey",
+            {
+                "template": "mod_type",
+                "condition": lambda v: v,
+                "format": lambda v: v["Name"],
+            },
+        ),
+        (
+            "ImplicitTagsKeys",
+            {
+                "template": "tags",
+                "condition": lambda v: v,
+                "format": lambda v: ", ".join([t["Id"] for t in v]),
+            },
+        ),
+        (
+            "GameMode",  # 0: All, 1: Normal, 2: Ruthless
+            {
+                "template": "game_mode",
+            },
+        ),
+    )
 
     def by_rowid(self, parsed_args):
         return self._export(
             parsed_args,
-            self.rr["Mods.dat64"][parsed_args.start : parsed_args.end],
+            self.rr[self._MODS_FILE_NAME][parsed_args.start : parsed_args.end],
         )
 
     def by_id(self, parsed_args):
@@ -181,54 +230,59 @@ class ModParser(parser.BaseParser):
             parsed_args, self._mod_column_index_filter(column_id="Name", arg_list=parsed_args.name)
         )
 
-    def filter(self, args):
-        mods = []
+    def by_filter(self, parsed_args):
+        if parsed_args.re_id:
+            parsed_args.re_id = re.compile(parsed_args.re_id, flags=re.UNICODE)
 
         filters = []
-        if args.domain:
+        if parsed_args.domain:
             filters.append(
                 {
                     "column": "Domain",
-                    "comp": getattr(constants.MOD_DOMAIN, args.domain),
+                    "comp": getattr(constants.MOD_DOMAIN, parsed_args.domain),
                     "func": lambda m, c: m == c,
                 }
             )
-
-        if args.generation_type:
+        if parsed_args.generation_type:
             filters.append(
                 {
                     "column": "GenerationType",
-                    "comp": getattr(constants.MOD_GENERATION_TYPE, args.generation_type),
+                    "comp": getattr(constants.MOD_GENERATION_TYPE, parsed_args.generation_type),
                     "func": lambda m, c: m == c,
                 }
             )
-
-        if args.game_mode:
+        if parsed_args.game_mode:
             filters.append(
                 {
                     "column": "GameMode",
-                    "comp": getattr(constants.GAME_MODES, args.game_mode),
+                    "comp": getattr(constants.GAME_MODES, parsed_args.game_mode),
                     "func": lambda m, c: c == 0 or m in (c, 0),
                 }
             )
 
-        for mod in self.rr["Mods.dat64"]:
-            for filter in filters:
-                if not filter["func"](mod[filter["column"]], filter["comp"]):
+        mods = []
+        for mod in self.rr[self._MODS_FILE_NAME]:
+            if parsed_args.re_id and not parsed_args.re_id.match(mod["Id"]):
+                continue
+            for f in filters:
+                if not f["func"](mod[f["column"]], f["comp"]):
                     break
             else:
                 mods.append(mod)
 
-        return self._export(args, mods)
+        return self._export(parsed_args, mods)
 
     def _export(self, parsed_args, mods):
         r = ExporterResult()
 
-        if mods:
-            console("Found %s mods. Processing..." % len(mods))
-        else:
-            console("No mods found for the specified parameters. Quitting.", msg=Msg.warning)
+        if not mods:
+            console(
+                "No modifiers found for the specified parameters. Quitting.",
+                msg=Msg.warning,
+            )
             return r
+
+        console("Found %s mods. Processing..." % len(mods))
 
         # Needed for localizing sell prices
         self.rr["BaseItemTypes.dat64"].build_index("Id")
@@ -236,45 +290,17 @@ class ModParser(parser.BaseParser):
         for mod in mods:
             data = OrderedDict()
 
-            for k in (
-                ("Id", "id"),
-                ("Domain", "domain"),
-                ("GenerationType", "generation_type"),
-                ("Level", "required_level"),
-            ):
-                v = mod[k[0]]
-                if v:
-                    data[k[1]] = v
-
-            if mod["Name"]:
-                root = text.parse_description_tags(mod["Name"])
-
-                def handler(hstr, parameter):
-                    return hstr if parameter == "MS" else ""
-
-                data["name"] = root.handle_tags({"if": handler, "elif": handler})
-
-            # TODO: need to look into this before completely removing it.
+            # Copy over simple fields from the .dat64
+            parser.apply_simple_column_map(data, self._COPY_KEYS, mod)
 
             if mod["BuffTemplate"] and mod["BuffTemplate"]["BuffDefinitionsKey"]:
                 data["granted_buff_id"] = mod["BuffTemplate"]["BuffDefinitionsKey"]["Id"]
                 data["granted_buff_value"] = mod["BuffTemplate"]["AuraRadius"]
-            # todo ID for GEPL
-
-            # 3.19: Families now stores a list
-            # Parse Families to mod groups
-            if mod["Families"]:
-                data["mod_groups"] = ", ".join([m["Id"] for m in mod["Families"]])
 
             if mod["GrantedEffectsPerLevelKeys"]:
                 data["granted_skill"] = ", ".join(
                     [k["GrantedEffect"]["Id"] for k in mod["GrantedEffectsPerLevelKeys"]]
                 )
-            data["mod_type"] = mod["ModTypeKey"]["Name"]
-
-            # Game mode - 0: All, 1: Normal, 2: Ruthless
-            if mod["GameMode"] is not None:
-                data["game_mode"] = mod["GameMode"]
 
             stats = []
             values = []
@@ -302,14 +328,6 @@ class ModParser(parser.BaseParser):
                     data["stat_text"],
                 )
 
-            # Veiled modifiers
-            if mod["Domain"] == constants.MOD_DOMAIN.VEILED:
-                data["stat_text"] = re.sub(
-                    r"<veiled (\w+) (.+)>",
-                    lambda match: f"{{{{Veiled|{match.group(1)}|{match.group(2)}}}}}",
-                    data["stat_text"],
-                )
-
             for i, (sid, (vmin, vmax)) in enumerate(zip(stats, values), start=1):
                 data["stat%s_id" % i] = sid
                 data["stat%s_min" % i] = vmin
@@ -324,19 +342,6 @@ class ModParser(parser.BaseParser):
                 j = i + 1
                 data["generation_weight%s_tag" % j] = tag["Id"]
                 data["generation_weight%s_value" % j] = mod["GenerationWeight_Values"][i]
-
-            # 3.15
-
-            tags = []
-            for i, tag in enumerate(mod["ImplicitTagsKeys"]):
-                j = i + 1
-                # data['tag%s_tag' % j] = tag['Id']
-                # data['tag%s_value' % j] = mod['ImplicitTagsKeys'][i]
-                # print(tag['Id'])
-                tags.append(tag["Id"])
-            # tags = ','.join(tags)
-            if tags:
-                data["tags"] = ", ".join(tags)
 
             if mod["ModTypeKey"]:
                 sell_price = defaultdict(int)
@@ -371,88 +376,5 @@ class ModParser(parser.BaseParser):
                 ],
                 wiki_message="Mod updater",
             )
-
-        return r
-
-    @deprecated(message="Will be done in-wiki in the future - non functional")
-    def tempest(self, parsed_args):
-        tf = self.tc["map_stat_descriptions.csd"]
-        data = []
-        for mod in self.rr["Mods.dat64"]:
-            # Is it a tempest mod?
-            if mod["CorrectGroup"] != "MapEclipse":
-                continue
-
-            # Doesn't have a name - probably not implemented
-            if not mod["Name"]:
-                continue
-
-            stats = []
-            for i in constants.MOD_STATS_RANGE:
-                stat = mod["StatsKey%s" % i]
-                if stat:
-                    stats.append(stat)
-
-            info = {}
-            info["name"] = mod["Name"]
-            effects = []
-
-            stat_ids = [st["Id"] for st in stats]
-            stat_values = []
-
-            for i, stat in enumerate(stats):
-                j = i + 1
-                values = [mod["Stat%sMin" % j], mod["Stat%sMax" % j]]
-                if values[0] == values[1]:
-                    values = values[0]
-                stat_values.append(values)
-
-            try:
-                index = stat_ids.index("map_summon_exploding_buff_storms")
-            except ValueError:
-                pass
-            else:
-                # Value is incremented by 1 for some reason
-                tempest = self.rr["ExplodingStormBuffs.dat64"][stat_values[index] - 1]
-
-                stat_ids.pop(index)
-                stat_values.pop(index)
-
-                if tempest["BuffDefinitionsKey"]:
-                    tempest_stats = tempest["BuffDefinitionsKey"]["StatKeys"]
-                    tempest_values = tempest["StatValues"]
-                    tempest_stat_ids = [st["Id"] for st in tempest_stats]
-                    t = tf.get_translation(
-                        tempest_stat_ids,
-                        tempest_values,
-                        full_result=True,
-                        lang=config.get_option("language"),
-                    )
-                    self._append_effect(
-                        t, effects, "The tempest buff provides the following effects:"
-                    )
-                # if tempest['MonsterVarietiesKey']:
-                #    print(tempest['MonsterVarietiesKey'])
-                #    break
-
-            t = tf.get_translation(
-                stat_ids, stat_values, full_result=True, lang=config.get_option("language")
-            )
-            self._append_effect(t, effects, "The area gets the following modifiers:")
-
-            info["effect"] = "\n".join(effects)
-            data.append(info)
-
-        data.sort(key=lambda info: info["name"])
-
-        out = []
-        for info in data:
-            out.append("|-\n")
-            out.append("| %s\n" % info["name"])
-            out.append("| %s\n" % info["effect"])
-            out.append("| \n")
-
-        r = ExporterResult()
-        r.add_result(lines=out, out_file="tempest_mods.txt")
 
         return r
