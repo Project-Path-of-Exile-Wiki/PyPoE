@@ -313,25 +313,46 @@ class ModParser(parser.BaseParser):
                 stat = k["Id"]
                 value = mod["Stat%sMin" % i], mod["Stat%sMax" % i]
 
-                if value[0] == 0 and value[1] == 0:
+                # We've always omitted zero value stats, but with version 3.30,
+                # it's now necessary to force the inclusion of "local_display_"
+                # stats to build the descriptions for granted effects.
+                force_stat = False
+                if stat.find("local_display_") == 0:
+                    force_stat = True
+
+                if not force_stat and value[0] == 0 and value[1] == 0:
                     continue
 
                 stats.append(stat)
                 values.append(value)
 
             data["stat_text"] = "<br>".join(self._get_stats(stats, values, mod))
-            if mod["BuffTemplate"] and mod["BuffTemplate"]["AuraRadius"]:
-                radius = mod["BuffTemplate"]["AuraRadius"] / 10
-                data["stat_text"] = re.sub(
-                    r"\[\[Nearby\|?([^]]*)]]",
-                    lambda match: f"{{{{Radius|{match.group(1)}|{radius}m}}}}",
-                    data["stat_text"],
-                )
+
+            # Previously used to replace "Nearby" with a template, if the radius was known.
+            # This should be obsolete as of version 3.30, as the radius is now supposed
+            # to be given directly by the stat text.
+            # if mod["BuffTemplate"] and mod["BuffTemplate"]["AuraRadius"]:
+            #     radius = mod["BuffTemplate"]["AuraRadius"] / 10
+            #     data["stat_text"] = re.sub(
+            #         r"\[\[Nearby\|?([^]]*)]]",
+            #         lambda match: f"{{{{Radius|{match.group(1)}|{radius}m}}}}",
+            #         data["stat_text"],
+            #     )
 
             for i, (sid, (vmin, vmax)) in enumerate(zip(stats, values), start=1):
                 data["stat%s_id" % i] = sid
                 data["stat%s_min" % i] = vmin
                 data["stat%s_max" % i] = vmax
+
+            granted_effects = []
+            if mod["GrantedEffectsPerLevelKeys"]:
+                for gepl in mod["GrantedEffectsPerLevelKeys"]:
+                    ge = gepl["GrantedEffect"]
+                    granted_effects.append((ge["Id"], gepl["Level"]))
+            for i, (geid, gelv) in enumerate(granted_effects):
+                j = i + 1
+                data["granted_effect%s_id" % j] = geid
+                data["granted_effect%s_level" % j] = gelv
 
             for i, tag in enumerate(mod["SpawnWeight_TagsKeys"]):
                 j = i + 1
