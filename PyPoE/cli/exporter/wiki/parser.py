@@ -1675,6 +1675,12 @@ class BaseParser:
     def _format_detailed(self, custom, ingame):
         return self._DETAILED_FORMAT % (custom, ingame)
 
+    def _format_skill_link(self, sid, name=None):
+        if name:
+            return "{{sl|id=%s|name=%s}}" % (sid, name)
+        else:
+            return "{{sl|id=%s}}" % sid
+
     def _format_custom_hidden(self, string):
         return "%s (%s)" % (string, _LANG[self.lang]["Hidden"])
 
@@ -1755,6 +1761,39 @@ class BaseParser:
             lang=self.lang,
         )
         out = []
+
+        if mod and mod["GrantedEffectsPerLevelKeys"]:
+            all_found_ids = set()
+            for tr in result.found:
+                all_found_ids.update(tr.ids)
+
+            for stat_id in result.source_ids:
+                if (
+                    stat_id.find("local_display_") == 0
+                    and result.source_values[stat_id][0] == 0
+                    and result.source_values[stat_id][1] == 0
+                    and stat_id not in all_found_ids
+                ):
+                    if "Id" not in self.rr["ClientStrings.dat64"].index:
+                        self.rr["ClientStrings.dat64"].build_index("Id")
+                    gepl = mod["GrantedEffectsPerLevelKeys"][0]
+                    if gepl:
+                        lvl = gepl["Level"]
+                        ge = gepl["GrantedEffect"]
+                        if ge["IsSupport"]:
+                            name = ge["SupportName"]
+                            cs_id = "ModGrantsSupportEffectWithLevel"
+                        else:
+                            name = None
+                            # Skills that cannot be supported are shown without a level
+                            cs_id = (
+                                "ModGrantsEffect"
+                                if ge["CannotBeSupported"]
+                                else "ModGrantsEffectWithLevel"
+                            )
+                        cs = self.rr["ClientStrings.dat64"].index["Id"][cs_id]["Text"]
+                        out.append(cs.format(self._format_skill_link(ge["Id"], name), lvl))
+                    break
 
         if mod and mod["Domain"] == constants.MOD_DOMAIN.MONSTER:
             default = self.tc["stat_descriptions.csd"].get_translation(
