@@ -257,7 +257,7 @@ class ItemWikiCondition(WikiCondition):
 class ItemsHandler(ExporterHandler):
     def __init__(self, sub_parser, *args, **kwargs):
         super().__init__(self, sub_parser, *args, **kwargs)
-        self.parser = sub_parser.add_parser("items", help="Items Exporter")
+        self.parser = sub_parser.add_parser("items", help="Export items data")
         self.parser.set_defaults(func=lambda args: self.parser.print_help())
         core_sub = self.parser.add_subparsers()
 
@@ -271,7 +271,7 @@ class ItemsHandler(ExporterHandler):
         self.add_default_subparser_filters(sub, cls=ItemsParser, type="item")
 
         item_filter_parser = sub.add_parser(
-            "by_filter",
+            "filter",
             help="Extracts all items matching various filters",
         )
         self.add_default_parsers(
