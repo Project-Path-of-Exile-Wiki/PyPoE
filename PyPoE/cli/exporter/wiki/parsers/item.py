@@ -1985,11 +1985,10 @@ class ItemsParser(parser.BaseParser):
                 full_result=True,
                 lang=self._language,
             )
-            infobox["buff_stat_text"] = self._format_lines(
-                [parser.make_inter_wiki_links(line) for line in tr.lines]
+            infobox["buff_stat_text"] = "<br>".join(
+                parser.make_inter_wiki_links(parser.process_keywords(line)) for line in tr.lines
             )
 
-    # TODO: BuffDefinitionsKey, BuffStatValues
     _type_flask = _type_factory(
         data_file="Flasks.dat64",
         data_mapping=(
