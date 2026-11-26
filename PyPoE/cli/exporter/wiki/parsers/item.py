@@ -2142,7 +2142,7 @@ class ItemsParser(parser.BaseParser):
                 {
                     "template": "help_text",
                     "condition": lambda v: v,
-                    "format": lambda v: "<br>".join(v.splitlines()),
+                    "format": lambda v: parser.process_keywords("<br>".join(v.splitlines())),
                 },
             ),
             (
@@ -3376,8 +3376,10 @@ class ItemsParser(parser.BaseParser):
 
         help_text = ot["Base"].get("description_text")
         if help_text:
-            infobox["help_text"] = "<br>".join(
-                self.rr["ClientStrings.dat64"].index["Id"][help_text]["Text"].splitlines()
+            infobox["help_text"] = parser.process_keywords(
+                "<br>".join(
+                    self.rr["ClientStrings.dat64"].index["Id"][help_text]["Text"].splitlines()
+                )
             )
 
         for i, mod in enumerate(base_item_type["Implicit_ModsKeys"]):
