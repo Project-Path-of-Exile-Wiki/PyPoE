@@ -1660,10 +1660,9 @@ class ItemsParser(parser.BaseParser):
             if override["Effect"]:
                 skill = override["Effect"]["GrantedEffect"]
                 infobox["tattoo_skill_id"] = skill["Id"]
-                skill_name = skill["ActiveSkill"]["DisplayedName"]
-                link = f"[[Skill:{skill['Id']}|{skill_name}]]"
-                lines = [line.replace(skill_name, link) for line in lines]
-            stat_text = "<br>".join(parser.make_inter_wiki_links(line) for line in lines)
+            stat_text = "<br>".join(
+                parser.make_inter_wiki_links(parser.process_keywords(line)) for line in lines
+            )
             infobox["description"] = stat_text
         except KeyError:
             return False
