@@ -108,6 +108,14 @@ class IncursionRoomParser(parser.BaseParser):
         error_msg="Several incursion rooms have not been found:\n%s",
     )
 
+    _NAME_APPENDIX_BY_ID = {
+        "English": {
+            "QueensChambersI": " (tier 1)",
+            "QueensChambersII": " (tier 2)",
+            "QueensChambersIII": " (tier 3)",
+        },
+    }
+
     _COPY_KEYS = OrderedDict(
         (
             (
@@ -288,12 +296,18 @@ class IncursionRoomParser(parser.BaseParser):
                         % {"dst": os.path.join(self._img_path, data["icon"])}
                     )
 
+            language = config.get_option("language")
+            appendix = self._NAME_APPENDIX_BY_ID[language].get(data["id"])
+            page = data["name"]
+            if appendix is not None:
+                page += appendix
+
             r.add_result(
                 text=cond,
-                out_file="incursion_room_%s.txt" % data["name"],
+                out_file="incursion_room_%s.txt" % page,
                 wiki_page=[
                     {
-                        "page": data["name"],
+                        "page": page,
                         "condition": cond,
                     },
                     {
