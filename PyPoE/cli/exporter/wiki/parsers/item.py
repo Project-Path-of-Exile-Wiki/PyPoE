@@ -1435,6 +1435,140 @@ class ItemsParser(parser.BaseParser):
         "Metadata/Items/Scarabs/ScarabAbyss3",
         "Metadata/Items/Scarabs/ScarabAbyss4",
         # =================================================================
+        # New scarabs (removed from the game in 3.30.0)
+        # =================================================================
+        "Metadata/Items/Scarabs/ScarabBreachNew1",
+        "Metadata/Items/Scarabs/ScarabBreachNew2",
+        "Metadata/Items/Scarabs/ScarabBreachNew3",
+        "Metadata/Items/Scarabs/ScarabBreachNew4",
+        "Metadata/Items/Scarabs/ScarabBreachNew5",
+        "Metadata/Items/Scarabs/ScarabBreachNew6",
+        "Metadata/Items/Scarabs/ScarabMapsNew1",
+        "Metadata/Items/Scarabs/ScarabMapsNew2",
+        "Metadata/Items/Scarabs/ScarabMapsNew3",
+        "Metadata/Items/Scarabs/ScarabMapsNew4",
+        "Metadata/Items/Scarabs/ScarabMapsNew5",
+        "Metadata/Items/Scarabs/ScarabUniquesNew1",
+        "Metadata/Items/Scarabs/ScarabUniquesNew2",
+        "Metadata/Items/Scarabs/ScarabUniquesNew3",
+        "Metadata/Items/Scarabs/ScarabBeastsNew1",
+        "Metadata/Items/Scarabs/ScarabBeastsNew2",
+        "Metadata/Items/Scarabs/ScarabBeastsNew3",
+        "Metadata/Items/Scarabs/ScarabBeastsNew4",
+        "Metadata/Items/Scarabs/ScarabInfluenceNew1",
+        "Metadata/Items/Scarabs/ScarabInfluenceNew2",
+        "Metadata/Items/Scarabs/ScarabInfluenceNew3",
+        "Metadata/Items/Scarabs/ScarabInfluenceNew4",
+        "Metadata/Items/Scarabs/ScarabSulphiteNew1",
+        "Metadata/Items/Scarabs/ScarabSulphiteNew2",
+        "Metadata/Items/Scarabs/ScarabSulphiteNew3",
+        "Metadata/Items/Scarabs/ScarabDivinationCardsNew1",
+        "Metadata/Items/Scarabs/ScarabDivinationCardsNew2",
+        "Metadata/Items/Scarabs/ScarabDivinationCardsNew3",
+        "Metadata/Items/Scarabs/ScarabTormentNew1",
+        "Metadata/Items/Scarabs/ScarabTormentNew2",
+        "Metadata/Items/Scarabs/ScarabTormentNew3",
+        "Metadata/Items/Scarabs/ScarabTormentNew4",
+        "Metadata/Items/Scarabs/ScarabStrongboxNew1",
+        "Metadata/Items/Scarabs/ScarabStrongboxNew2",
+        "Metadata/Items/Scarabs/ScarabStrongboxNew3",
+        "Metadata/Items/Scarabs/ScarabStrongboxNew4",
+        "Metadata/Items/Scarabs/ScarabStrongboxNew5",
+        "Metadata/Items/Scarabs/ScarabHarbingerNew1",
+        "Metadata/Items/Scarabs/ScarabHarbingerNew2",
+        "Metadata/Items/Scarabs/ScarabHarbingerNew3",
+        "Metadata/Items/Scarabs/ScarabHarbingerNew4",
+        "Metadata/Items/Scarabs/ScarabExpedition1",
+        "Metadata/Items/Scarabs/ScarabExpedition2",
+        "Metadata/Items/Scarabs/ScarabExpedition3",
+        "Metadata/Items/Scarabs/ScarabExpedition4",
+        "Metadata/Items/Scarabs/ScarabExpedition5",
+        "Metadata/Items/Scarabs/ScarabLegionNew1",
+        "Metadata/Items/Scarabs/ScarabLegionNew2",
+        "Metadata/Items/Scarabs/ScarabLegionNew3",
+        "Metadata/Items/Scarabs/ScarabLegionNew4",
+        "Metadata/Items/Scarabs/ScarabLegionNew5",
+        "Metadata/Items/Scarabs/ScarabAbyssNew1",
+        "Metadata/Items/Scarabs/ScarabAbyssNew2",
+        "Metadata/Items/Scarabs/ScarabAbyssNew3",
+        "Metadata/Items/Scarabs/ScarabAbyssNew4",
+        "Metadata/Items/Scarabs/ScarabAbyssNew5",
+        "Metadata/Items/Scarabs/ScarabAnarchy1",
+        "Metadata/Items/Scarabs/ScarabAnarchy2",
+        "Metadata/Items/Scarabs/ScarabAnarchy3",
+        "Metadata/Items/Scarabs/ScarabAnarchy4",
+        "Metadata/Items/Scarabs/ScarabEssence1",
+        "Metadata/Items/Scarabs/ScarabEssence2",
+        "Metadata/Items/Scarabs/ScarabEssence3",
+        "Metadata/Items/Scarabs/ScarabEssence4",
+        "Metadata/Items/Scarabs/ScarabEssence5",
+        "Metadata/Items/Scarabs/ScarabDomination1",
+        "Metadata/Items/Scarabs/ScarabDomination2",
+        "Metadata/Items/Scarabs/ScarabDomination3",
+        "Metadata/Items/Scarabs/ScarabDomination4",
+        "Metadata/Items/Scarabs/ScarabRitual1",
+        "Metadata/Items/Scarabs/ScarabRitual2",
+        "Metadata/Items/Scarabs/ScarabRitual3",
+        "Metadata/Items/Scarabs/ScarabRitual4",
+        "Metadata/Items/Scarabs/ScarabHarvest1",
+        "Metadata/Items/Scarabs/ScarabHarvest2",
+        "Metadata/Items/Scarabs/ScarabHarvest3",
+        "Metadata/Items/Scarabs/ScarabIncursion1",
+        "Metadata/Items/Scarabs/ScarabIncursion2",
+        "Metadata/Items/Scarabs/ScarabIncursion3",
+        "Metadata/Items/Scarabs/ScarabIncursion4",
+        "Metadata/Items/Scarabs/ScarabBetrayal1",
+        "Metadata/Items/Scarabs/ScarabBetrayal2",
+        "Metadata/Items/Scarabs/ScarabBetrayal3",
+        "Metadata/Items/Scarabs/ScarabBetrayal4",
+        "Metadata/Items/Scarabs/ScarabBeyond1",
+        "Metadata/Items/Scarabs/ScarabBeyond2",
+        "Metadata/Items/Scarabs/ScarabBeyond3",
+        "Metadata/Items/Scarabs/ScarabBeyond4",
+        "Metadata/Items/Scarabs/ScarabBeyond5",
+        "Metadata/Items/Scarabs/ScarabUltimatum1",
+        "Metadata/Items/Scarabs/ScarabUltimatum2",
+        "Metadata/Items/Scarabs/ScarabUltimatum3",
+        "Metadata/Items/Scarabs/ScarabUltimatum4",
+        "Metadata/Items/Scarabs/ScarabUltimatum5",
+        "Metadata/Items/Scarabs/ScarabDelirium1",
+        "Metadata/Items/Scarabs/ScarabDelirium2",
+        "Metadata/Items/Scarabs/ScarabDelirium3",
+        "Metadata/Items/Scarabs/ScarabDelirium4",
+        "Metadata/Items/Scarabs/ScarabDelirium5",
+        "Metadata/Items/Scarabs/ScarabBlightNew1",
+        "Metadata/Items/Scarabs/ScarabBlightNew2",
+        "Metadata/Items/Scarabs/ScarabBlightNew3",
+        "Metadata/Items/Scarabs/ScarabBlightNew4",
+        "Metadata/Items/Scarabs/ScarabBlightNew5",
+        "Metadata/Items/Scarabs/ScarabSettlers1",
+        "Metadata/Items/Scarabs/ScarabSettlers2",
+        "Metadata/Items/Scarabs/ScarabSettlers3",
+        "Metadata/Items/Scarabs/ScarabSettlers4",
+        "Metadata/Items/Scarabs/ScarabMercenaries1",
+        "Metadata/Items/Scarabs/ScarabMercenaries2",
+        "Metadata/Items/Scarabs/ScarabMercenaries3",
+        "Metadata/Items/Scarabs/ScarabMercenaries4",
+        "Metadata/Items/Scarabs/ScarabMisc1",
+        "Metadata/Items/Scarabs/ScarabMisc2",
+        "Metadata/Items/Scarabs/ScarabMisc3",
+        "Metadata/Items/Scarabs/ScarabMisc4",
+        "Metadata/Items/Scarabs/ScarabMisc5",
+        "Metadata/Items/Scarabs/ScarabMisc6",
+        "Metadata/Items/Scarabs/ScarabMisc7",
+        "Metadata/Items/Scarabs/ScarabMisc8",
+        "Metadata/Items/Scarabs/ScarabMisc9",
+        "Metadata/Items/Scarabs/ScarabMisc10",
+        "Metadata/Items/Scarabs/ScarabMisc11",
+        "Metadata/Items/Scarabs/ScarabUber1",
+        "Metadata/Items/Scarabs/ScarabUber2",
+        "Metadata/Items/Scarabs/ScarabUber3",
+        "Metadata/Items/Scarabs/ScarabUber4",
+        "Metadata/Items/Scarabs/ScarabUber5",
+        "Metadata/Items/Scarabs/ScarabUber6",
+        "Metadata/Items/Scarabs/ScarabUber7",
+        "Metadata/Items/Currency/CurrencyStackedScarab",
+        # =================================================================
         # Map fragments
         # =================================================================
         "Metadata/Items/MapFragments/CurrencyVaalFragments1Complete",
@@ -1446,8 +1580,6 @@ class ItemsParser(parser.BaseParser):
         "Metadata/Items/MapFragments/CurrencySirusFragmentsComplete",
         "Metadata/Items/MapFragments/RatsAllflamePack",
         "Metadata/Items/MapFragments/Maven/MavenMapAtlas5",
-        "Metadata/Items/Scarabs/ScarabMisc6",
-        "Metadata/Items/Scarabs/ScarabMisc7",
         # =================================================================
         # Corpse items
         # =================================================================
@@ -1660,10 +1792,9 @@ class ItemsParser(parser.BaseParser):
             if override["Effect"]:
                 skill = override["Effect"]["GrantedEffect"]
                 infobox["tattoo_skill_id"] = skill["Id"]
-                skill_name = skill["ActiveSkill"]["DisplayedName"]
-                link = f"[[Skill:{skill['Id']}|{skill_name}]]"
-                lines = [line.replace(skill_name, link) for line in lines]
-            stat_text = "<br>".join(parser.make_inter_wiki_links(line) for line in lines)
+            stat_text = "<br>".join(
+                parser.make_inter_wiki_links(parser.process_keywords(line)) for line in lines
+            )
             infobox["description"] = stat_text
         except KeyError:
             return False
@@ -1986,11 +2117,10 @@ class ItemsParser(parser.BaseParser):
                 full_result=True,
                 lang=self._language,
             )
-            infobox["buff_stat_text"] = self._format_lines(
-                [parser.make_inter_wiki_links(line) for line in tr.lines]
+            infobox["buff_stat_text"] = "<br>".join(
+                parser.make_inter_wiki_links(parser.process_keywords(line)) for line in tr.lines
             )
 
-    # TODO: BuffDefinitionsKey, BuffStatValues
     _type_flask = _type_factory(
         data_file="Flasks.dat64",
         data_mapping=(
@@ -2143,7 +2273,7 @@ class ItemsParser(parser.BaseParser):
                 {
                     "template": "help_text",
                     "condition": lambda v: v,
-                    "format": lambda v: "<br>".join(v.splitlines()),
+                    "format": lambda v: parser.process_keywords("<br>".join(v.splitlines())),
                 },
             ),
             (
@@ -3377,8 +3507,10 @@ class ItemsParser(parser.BaseParser):
 
         help_text = ot["Base"].get("description_text")
         if help_text:
-            infobox["help_text"] = "<br>".join(
-                self.rr["ClientStrings.dat64"].index["Id"][help_text]["Text"].splitlines()
+            infobox["help_text"] = parser.process_keywords(
+                "<br>".join(
+                    self.rr["ClientStrings.dat64"].index["Id"][help_text]["Text"].splitlines()
+                )
             )
 
         for i, mod in enumerate(base_item_type["Implicit_ModsKeys"]):
