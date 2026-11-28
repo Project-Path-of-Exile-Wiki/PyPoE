@@ -41,6 +41,7 @@ from difflib import unified_diff
 from itertools import islice
 from queue import Empty, SimpleQueue
 from threading import Lock
+from typing import List, Union
 
 from requests.exceptions import HTTPError
 
@@ -63,7 +64,9 @@ from PyPoE.cli.handler import BaseHandler
 
 __all__ = ["ExporterHandler", "ExporterResult", "WikiHandler"]
 
-WIKIS = {"English": "www.poe2wiki.net/w"}
+WIKIS = {
+    "English": "www.poe2wiki.net/w",
+}
 
 # =============================================================================
 # Classes
@@ -142,6 +145,62 @@ class WikiHandler:
         except Empty:
             pass
 
+    def rebuild_data_pages(self):
+        try:
+            while True:
+                data_page = self.data_pages_to_rebuild.get_nowait()
+                console(f"Rebuilding Cargo data for {data_page.name}")
+                for retry in range(5):
+                    try:
+                        # We just want to null edit. There's no need to also purge cache.
+                        data_page.touch()
+                        break
+                    except Exception:
+                        console(
+                            f"Failed to rebuild Cargo data for {data_page.name} ({retry} retries)",
+                            Msg.warning,
+                        )
+                        time.sleep(0.01 * 2**retry)
+                time.sleep(self.cmdargs.wiki_sleep)
+
+                # If this is a numbered data storage template, add the next one to the queue
+                pattern = re.compile(r"^(Template:.+/store data )(\d+)$")
+                match = pattern.search(data_page.name)
+                if match:
+                    new_page = match.group(1) + str(int(match.group(2)) + 1)
+                    self.add_data_pages_to_queue(new_page, warn_not_exists=False)
+        except Empty:
+            pass
+
+    def add_data_pages_to_queue(self, pages, warn_not_exists=True):
+        if pages:
+            if not isinstance(pages, List):
+                pages = [pages]
+            for wiki_page in pages:
+                try:
+                    page = self.site.pages[wiki_page]
+                except mwclient.errors.InvalidPageTitle:
+                    console(
+                        f"Invalid name for data page {wiki_page}. Skipping",
+                        msg=Msg.warning,
+                    )
+                    continue
+
+                if not page.can("edit"):
+                    console(
+                        f"Cannot rebuild data page {wiki_page}. No permission to edit. Skipping",
+                        msg=Msg.warning,
+                    )
+                    continue
+
+                if page.exists:
+                    self.data_pages_to_rebuild.put(page)
+                elif warn_not_exists:
+                    console(
+                        f"Data page {wiki_page} does not exist. Skipping",
+                        msg=Msg.warning,
+                    )
+
     def handle_page(self, *a, row=None, rownum=None):
         if isinstance(row["wiki_page"], str):
             pages = [
@@ -157,7 +216,15 @@ class WikiHandler:
         page_found = False
         new = False
         for pdata in pages:
-            page = self.site.pages[pdata["page"]]
+            try:
+                page = self.site.pages[pdata["page"]]
+            except mwclient.errors.InvalidPageTitle:
+                console(
+                    f"Invalid page name {pdata['page']}. Skipping",
+                    msg=Msg.warning,
+                )
+                continue
+
             if not page.can("edit"):
                 console(
                     f"Cannot edit {pdata['page']}. Skipping",
@@ -216,6 +283,7 @@ class WikiHandler:
 
             if self.cmdargs.purge_cache == "all" and not new:
                 self.pages_to_recache.put(page)
+                self.add_data_pages_to_queue(pdata.get("data_pages"))
 
             wiki_lines = page.text().splitlines()
             new_lines = text.splitlines()
@@ -280,6 +348,7 @@ class WikiHandler:
                     )
                     if self.cmdargs.purge_cache == "edited":
                         self.pages_to_recache.put(page)
+                        self.add_data_pages_to_queue(pdata.get("data_pages"))
                 else:
                     # TODO: what happens if it fails?
                     console("Something went wrong, status code:", msg=Msg.error)
@@ -371,6 +440,7 @@ class WikiHandler:
         self.parser = parser
         self.out_dir = out_dir
         self.pages_to_recache = SimpleQueue()
+        self.data_pages_to_rebuild = SimpleQueue()
         self.print_lock = Lock()
         self.write_lock = Lock()
 
@@ -400,6 +470,8 @@ class WikiHandler:
                 self._error_catcher(row=row, rownum=rownum)
                 time.sleep(cmdargs.wiki_sleep)
             self.recache_pages()
+
+        self.rebuild_data_pages()
 
 
 class ExporterHandler(BaseHandler):
@@ -647,15 +719,23 @@ class ExporterHandler(BaseHandler):
 
 
 class ExporterResult(list):
-    def add_result(self, text=None, out_file=None, wiki_page=None, wiki_message="", **extra):
+    def add_result(
+        self,
+        text=None,
+        out_file=None,
+        wiki_page=None,
+        wiki_message="",
+        data_pages: Union[List[str], None] = None,
+        **extra,
+    ):
         data = {
             "text": text,
             "out_file": out_file,
             "wiki_page": wiki_page,
             "wiki_message": wiki_message,
+            "data_pages": data_pages,
         }
         data.update(extra)
-
         self.append(data)
 
 
